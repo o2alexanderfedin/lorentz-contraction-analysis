@@ -507,20 +507,30 @@
                 animationProgress = 0;
             }
             
-            // Oscillate velocity for demonstration
-            velocity = 0.5 + 0.4 * Math.sin(animationProgress * Math.PI * 2);
-            document.getElementById('velocity').value = velocity;
-            document.getElementById('velocityValue').textContent = (velocity * 100).toFixed(0) + '% c';
+            // Keep velocity as user-controlled value (no automatic changes)
+            const gamma = calculateLorentzFactor(velocity);
+            const contractedLength = properLength / gamma;
             
-            updateDisplay();
+            // Update info cards
+            document.getElementById('gammaValue').textContent = gamma.toFixed(3);
+            document.getElementById('contractedValue').textContent = contractedLength.toFixed(1) + ' m';
+            document.getElementById('ratioValue').textContent = ((contractedLength / properLength) * 100).toFixed(1) + '%';
+            document.getElementById('dilationValue').textContent = (gamma * 100).toFixed(1) + '%';
             
-            // Add moving animation for the rod
-            const movingX = 50 + animationProgress * 400;
+            // Clear and redraw rest frame (static)
+            restCtx.clearRect(0, 0, restCanvas.width, restCanvas.height);
+            drawGrid(restCtx, false);
+            const restX = 300 - (properLength * pixelsPerMeter) / 2;
+            drawRod(restCtx, restX, properLength * pixelsPerMeter, '#4299e1', `L₀ = ${properLength}m`, false);
+            restCtx.fillStyle = '#48bb78';
+            restCtx.font = 'bold 12px Arial';
+            restCtx.fillText('👤 Rod at rest', 300, 30);
+            
+            // Animate moving frame - rod moves across screen
             movingCtx.clearRect(0, 0, movingCanvas.width, movingCanvas.height);
             drawGrid(movingCtx, true);
             
-            const gamma = calculateLorentzFactor(velocity);
-            const contractedLength = properLength / gamma;
+            const movingX = 50 + animationProgress * 400;
             
             // Draw moving rod at animated position
             drawRod(movingCtx, movingX, contractedLength * pixelsPerMeter, '#e53e3e', 
