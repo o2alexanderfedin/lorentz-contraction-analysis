@@ -309,30 +309,47 @@
             ctx.stroke();
             ctx.fillText('X₂', X2, 425);
             
-            // Draw laser detectors at all three positions
-            drawLaser(X0, 100, 'Laser T₀', '#48bb78');
-            drawLaser(X1, 100, 'Laser T₁', '#f6ad55');
-            drawLaser(X2, 100, 'Laser T₂', '#f56565');
+            // Get blinking state
+            const blinkState = Math.sin(Date.now() / 200) > 0;
+            
+            // Draw laser detectors at all three positions with blinking
+            drawLaser(X0, 100, 'Laser T₀', '#48bb78', blinkState);
+            drawLaser(X1, 100, 'Laser T₁', '#f6ad55', blinkState);
+            drawLaser(X2, 100, 'Laser T₂', '#f56565', blinkState);
             
             return { X1, X2, V1 };
         }
         
-        function drawLaser(x, y, label, color) {
-            // Laser emitter
+        function drawLaser(x, y, label, color, blinking) {
+            // Laser emitter with blinking effect
             ctx.fillStyle = color;
+            ctx.globalAlpha = blinking ? 1 : 0.4;
             ctx.fillRect(x - 15, y - 30, 30, 25);
             
-            // Laser beam (vertical)
+            // Laser beam (vertical) with blinking
             ctx.strokeStyle = color;
             ctx.lineWidth = 3;
             ctx.setLineDash([10, 5]);
-            ctx.globalAlpha = 0.6;
+            ctx.globalAlpha = blinking ? 0.8 : 0.2;
             ctx.beginPath();
             ctx.moveTo(x, y);
             ctx.lineTo(x, 400);
             ctx.stroke();
             ctx.globalAlpha = 1;
             ctx.setLineDash([]);
+            
+            // Add glow effect when blinking
+            if (blinking) {
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = color;
+                ctx.fillStyle = color;
+                ctx.globalAlpha = 0.3;
+                ctx.beginPath();
+                ctx.arc(x, y - 15, 25, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
             
             // Label
             ctx.fillStyle = '#2d3748';
@@ -523,9 +540,17 @@
             }
         });
         
-        // Initial draw
-        drawStaticElements();
-        drawParticle(X0, 400, false);
+        // Continuous animation for blinking
+        function continuousAnimation() {
+            if (!animationId) {
+                drawStaticElements();
+                drawParticle(X0, 400, false);
+            }
+            requestAnimationFrame(continuousAnimation);
+        }
+        
+        // Start continuous animation
+        continuousAnimation();
     </script>
 </body>
 </html>
