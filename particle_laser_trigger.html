@@ -262,6 +262,7 @@
         let T1 = 2; // time when acceleration stops
         let T2 = 5; // time of detection
         let X0 = 100; // initial position
+        let currentParticleX = X0; // Track current particle position
         
         function drawStaticElements() {
             // Clear canvas
@@ -309,13 +310,16 @@
             ctx.stroke();
             ctx.fillText('X₂', X2, 425);
             
-            // Get blinking state
-            const blinkState = Math.sin(Date.now() / 200) > 0;
+            // Check if particle is near each laser position (within detection range)
+            const detectionRange = 20;
+            const blinkX0 = Math.abs(currentParticleX - X0) < detectionRange;
+            const blinkX1 = Math.abs(currentParticleX - X1) < detectionRange;
+            const blinkX2 = Math.abs(currentParticleX - X2) < detectionRange;
             
-            // Draw laser detectors at all three positions with blinking
-            drawLaser(X0, 100, 'Laser T₀', '#48bb78', blinkState);
-            drawLaser(X1, 100, 'Laser T₁', '#f6ad55', blinkState);
-            drawLaser(X2, 100, 'Laser T₂', '#f56565', blinkState);
+            // Draw laser detectors at all three positions with selective blinking
+            drawLaser(X0, 100, 'Laser T₀', '#48bb78', blinkX0);
+            drawLaser(X1, 100, 'Laser T₁', '#f6ad55', blinkX1);
+            drawLaser(X2, 100, 'Laser T₂', '#f56565', blinkX2);
             
             return { X1, X2, V1 };
         }
@@ -413,14 +417,6 @@
                 particleActive = true;
                 currentPhase = 'accelerating';
                 document.getElementById('phase-t0').classList.add('active');
-                
-                // Draw T₀ laser flash at start
-                if (elapsed < 0.5) {
-                    ctx.fillStyle = 'rgba(72, 187, 120, 0.3)';
-                    ctx.beginPath();
-                    ctx.arc(X0, 400, 30, 0, Math.PI * 2);
-                    ctx.fill();
-                }
             } else if (elapsed < T2) {
                 // Uniform motion phase
                 const V1 = G * T1;
@@ -428,29 +424,16 @@
                 particleActive = true;
                 currentPhase = 'uniform';
                 document.getElementById('phase-t1').classList.add('active');
-                
-                // Draw T₁ laser flash at transition
-                if (elapsed >= T1 && elapsed < T1 + 0.5) {
-                    ctx.fillStyle = 'rgba(246, 173, 85, 0.3)';
-                    ctx.beginPath();
-                    ctx.arc(positions.X1, 400, 30, 0, Math.PI * 2);
-                    ctx.fill();
-                }
             } else {
                 // Detection phase
                 particleX = positions.X2;
                 particleActive = true;
                 currentPhase = 'detected';
                 document.getElementById('phase-t2').classList.add('active');
-                
-                // Draw T₂ laser flash at detection
-                if (elapsed < T2 + 0.5) {
-                    ctx.fillStyle = 'rgba(245, 101, 101, 0.3)';
-                    ctx.beginPath();
-                    ctx.arc(positions.X2, 400, 30, 0, Math.PI * 2);
-                    ctx.fill();
-                }
             }
+            
+            // Update global particle position for laser detection
+            currentParticleX = particleX;
             
             // Draw particle
             drawParticle(particleX, 400, particleActive);
@@ -540,17 +523,9 @@
             }
         });
         
-        // Continuous animation for blinking
-        function continuousAnimation() {
-            if (!animationId) {
-                drawStaticElements();
-                drawParticle(X0, 400, false);
-            }
-            requestAnimationFrame(continuousAnimation);
-        }
-        
-        // Start continuous animation
-        continuousAnimation();
+        // Initial draw
+        drawStaticElements();
+        drawParticle(X0, 400, false);
     </script>
 </body>
 </html>
