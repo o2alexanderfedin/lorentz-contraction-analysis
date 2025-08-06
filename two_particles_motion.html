@@ -598,6 +598,124 @@
             };
         }
         
+        function drawTimeMarkers(ctx, canvas, t, maxX, maxY, type, motionP0, motionP1) {
+            const padding = 50;
+            const width = canvas.width - 2 * padding;
+            const height = canvas.height - 2 * padding;
+            
+            // Time markers T0, T1, T2
+            const timeMarkers = [
+                { time: motionP0.T0, label: 'T₀', color: '#48bb78' },
+                { time: motionP0.T1, label: 'T₁', color: '#f6ad55' },
+                { time: motionP0.T2, label: 'T₂', color: '#9f7aea' }
+            ];
+            
+            timeMarkers.forEach(marker => {
+                if (t >= marker.time && marker.time <= maxX) {
+                    const x = padding + (marker.time / maxX) * width;
+                    
+                    // Draw vertical line
+                    ctx.strokeStyle = marker.color;
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([5, 5]);
+                    ctx.beginPath();
+                    ctx.moveTo(x, padding);
+                    ctx.lineTo(x, canvas.height - padding);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    
+                    // Draw time label
+                    ctx.fillStyle = marker.color;
+                    ctx.font = 'bold 12px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(marker.label, x, padding - 5);
+                    
+                    // Add position markers for position graph
+                    if (type === 'position' && marker.time === motionP0.T1) {
+                        // Mark X1 positions for both particles
+                        if (motionP0.X1 <= maxY) {
+                            const y0 = canvas.height - padding - (motionP0.X1 / maxY) * height;
+                            ctx.fillStyle = '#2a5298';
+                            ctx.beginPath();
+                            ctx.arc(x, y0, 4, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.font = '10px Arial';
+                            ctx.fillText('P₀@X₁', x - 25, y0 - 5);
+                        }
+                        if (motionP1.X1 <= maxY) {
+                            const y1 = canvas.height - padding - (motionP1.X1 / maxY) * height;
+                            ctx.fillStyle = '#e53e3e';
+                            ctx.beginPath();
+                            ctx.arc(x, y1, 4, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.font = '10px Arial';
+                            ctx.fillText('P₁@X₁', x + 25, y1 - 5);
+                        }
+                    }
+                    
+                    if (type === 'position' && marker.time === motionP0.T2) {
+                        // Mark X2 positions for both particles
+                        if (motionP0.X2 <= maxY) {
+                            const y0 = canvas.height - padding - (motionP0.X2 / maxY) * height;
+                            ctx.fillStyle = '#2a5298';
+                            ctx.beginPath();
+                            ctx.arc(x, y0, 4, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.font = '10px Arial';
+                            ctx.fillText('P₀@X₂', x - 25, y0 - 5);
+                        }
+                        if (motionP1.X2 <= maxY) {
+                            const y1 = canvas.height - padding - (motionP1.X2 / maxY) * height;
+                            ctx.fillStyle = '#e53e3e';
+                            ctx.beginPath();
+                            ctx.arc(x, y1, 4, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.font = '10px Arial';
+                            ctx.fillText('P₁@X₂', x + 25, y1 - 5);
+                        }
+                    }
+                }
+            });
+            
+            // Add current position markers
+            if (t > 0 && t <= maxX) {
+                const x = padding + (t / maxX) * width;
+                
+                if (type === 'position') {
+                    // Current positions for both particles
+                    const y0 = canvas.height - padding - (motionP0.position / maxY) * height;
+                    const y1 = canvas.height - padding - (motionP1.position / maxY) * height;
+                    
+                    // P0 marker
+                    ctx.fillStyle = '#2a5298';
+                    ctx.beginPath();
+                    ctx.arc(x, y0, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // P1 marker  
+                    ctx.fillStyle = '#e53e3e';
+                    ctx.beginPath();
+                    ctx.arc(x, y1, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (type === 'velocity') {
+                    // Current velocity (same for both)
+                    const y = canvas.height - padding - (motionP0.velocity / maxY) * height;
+                    ctx.fillStyle = '#48bb78';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (type === 'separation') {
+                    // Current separation
+                    const separation = motionP1.position - motionP0.position;
+                    const y = canvas.height - padding - (separation / maxY) * height;
+                    ctx.fillStyle = '#9f7aea';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+        
         function drawDistanceMarkers(ctx, canvas, t, maxX, maxY, motion) {
             const padding = 50;
             const width = canvas.width - 2 * padding;
@@ -924,14 +1042,17 @@
             drawAxes(posCtx, posCanvas, 'Time (seconds)', 'Position (light-seconds)', maxTime, maxPositionWithD);
             plotData(posCtx, posCanvas, positionDataP0, maxTime, maxPositionWithD, '#2a5298', 3);
             plotData(posCtx, posCanvas, positionDataP1, maxTime, maxPositionWithD, '#e53e3e', 3);
+            drawTimeMarkers(posCtx, posCanvas, currentT, maxTime, maxPositionWithD, 'position', currentMotionP0, currentMotionP1);
             
             // Draw velocity graph (same for both)
             drawAxes(velCtx, velCanvas, 'Time (seconds)', 'Velocity (c)', maxTime, maxVelocity);
             plotData(velCtx, velCanvas, velocityDataP0, maxTime, maxVelocity, '#48bb78', 3);
+            drawTimeMarkers(velCtx, velCanvas, currentT, maxTime, maxVelocity, 'velocity', currentMotionP0, currentMotionP1);
             
             // Draw separation graph instead of distance from X0
             drawAxes(distCtx, distCanvas, 'Time (seconds)', 'Separation P₁ - P₀ (light-seconds)', maxTime, parseFloat(document.getElementById('separation').value) * 1.5);
             plotData(distCtx, distCanvas, separationData, maxTime, parseFloat(document.getElementById('separation').value) * 1.5, '#9f7aea', 3);
+            drawTimeMarkers(distCtx, distCanvas, currentT, maxTime, parseFloat(document.getElementById('separation').value) * 1.5, 'separation', currentMotionP0, currentMotionP1);
             
             if (currentT < maxTime) {
                 animationId = requestAnimationFrame(animate);
