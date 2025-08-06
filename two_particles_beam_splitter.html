@@ -705,8 +705,9 @@
             document.getElementById('t2Detection').textContent = t2Both ? 'BOTH!' : 
                 (lasers[2].isDetectingP0 ? 'P₀' : (lasers[2].isDetectingP1 ? 'P₁' : 'Ready'));
             
-            document.getElementById('currentSeparation').textContent = 
-                Math.abs(p1.x - p0.x).toFixed(0) + ' units';
+            // Update path symmetry indicator
+            document.getElementById('pathSymmetry').textContent = '✓ Equal';
+            document.getElementById('pathSymmetry').style.color = '#48bb78';
             
             if (system.isRunning) {
                 animationId = requestAnimationFrame(animate);
