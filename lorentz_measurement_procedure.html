@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lorentz Contraction - Measurement Procedure</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: white;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 1400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            color: #333;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #764ba2;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .visualization-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .frame-title {
+            color: #2d3748;
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            background: white;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        
+        .control-group .value {
+            text-align: center;
+            font-size: 1.2em;
+            color: #764ba2;
+            font-weight: bold;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+            width: 100%;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(118, 75, 162, 0.4);
+        }
+        
+        .measurement-modes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .mode-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 3px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .mode-card.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            transform: scale(1.02);
+        }
+        
+        .mode-card h3 {
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+        
+        .mode-card p {
+            color: #4a5568;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+        
+        .info-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .info-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            text-align: center;
+        }
+        
+        .info-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .info-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+        
+        .info-label {
+            color: #718096;
+            font-size: 0.9em;
+        }
+        
+        .info-panel {
+            background: linear-gradient(135deg, #f0e6ff 0%, #e6f2ff 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #764ba2;
+        }
+        
+        .info-panel h3 {
+            color: #764ba2;
+            margin-bottom: 10px;
+        }
+        
+        .info-panel p {
+            line-height: 1.6;
+            color: #4a5568;
+            margin-bottom: 10px;
+        }
+        
+        .spacetime-diagram {
+            margin-top: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📐 Classic Measurement Procedure</h1>
+        <p class="subtitle">Standard Lorentz Interpretation - How Contracted Length is Measured</p>
+        
+        <div class="measurement-modes">
+            <div class="mode-card active" onclick="setMeasurementMode('simultaneous')">
+                <h3>⏱️ Simultaneous</h3>
+                <p>Measure both endpoints at the same time in observer's frame</p>
+            </div>
+            <div class="mode-card" onclick="setMeasurementMode('light-signal')">
+                <h3>💡 Light Signal</h3>
+                <p>Use light signals from midpoint to measure endpoints</p>
+            </div>
+            <div class="mode-card" onclick="setMeasurementMode('ruler')">
+                <h3>📏 Ruler Method</h3>
+                <p>Use a calibrated ruler in the observer's frame</p>
+            </div>
+            <div class="mode-card" onclick="setMeasurementMode('photography')">
+                <h3>📸 Photography</h3>
+                <p>Instantaneous snapshot accounting for light travel time</p>
+            </div>
+        </div>
+        
+        <div class="visualization-container">
+            <h2 class="frame-title">Measurement Procedure Visualization</h2>
+            <canvas id="measurementCanvas" width="1200" height="500"></canvas>
+        </div>
+        
+        <div class="spacetime-diagram">
+            <h2 class="frame-title">Spacetime Diagram</h2>
+            <canvas id="spacetimeCanvas" width="1200" height="400"></canvas>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="velocity">Rod Velocity (v/c)</label>
+                <input type="range" id="velocity" min="0" max="0.95" value="0.6" step="0.05">
+                <div class="value" id="velocityValue">0.60c</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="properLength">Proper Length L₀</label>
+                <input type="range" id="properLength" min="100" max="400" value="200" step="20">
+                <div class="value" id="lengthValue">200 units</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="measurementTime">Measurement Time</label>
+                <input type="range" id="measurementTime" min="0" max="100" value="50" step="1">
+                <div class="value" id="timeValue">t = 50</div>
+            </div>
+            
+            <div class="control-group">
+                <button onclick="toggleAnimation()">▶️ Start Animation</button>
+            </div>
+        </div>
+        
+        <div class="info-cards">
+            <div class="info-card">
+                <h3>Lorentz Factor γ</h3>
+                <div class="info-value" id="gammaValue">1.250</div>
+                <div class="info-label">1/√(1 - v²/c²)</div>
+            </div>
+            
+            <div class="info-card">
+                <h3>Measured Length</h3>
+                <div class="info-value" id="measuredLength">160.0</div>
+                <div class="info-label">L = L₀/γ</div>
+            </div>
+            
+            <div class="info-card">
+                <h3>Front Position</h3>
+                <div class="info-value" id="frontPosition">0.0</div>
+                <div class="info-label">x_front</div>
+            </div>
+            
+            <div class="info-card">
+                <h3>Rear Position</h3>
+                <div class="info-value" id="rearPosition">0.0</div>
+                <div class="info-label">x_rear</div>
+            </div>
+            
+            <div class="info-card">
+                <h3>Simultaneity Δt</h3>
+                <div class="info-value" id="simultaneityDiff">0.0</div>
+                <div class="info-label">Rod frame time diff</div>
+            </div>
+            
+            <div class="info-card">
+                <h3>Light Travel Time</h3>
+                <div class="info-value" id="lightTime">0.0</div>
+                <div class="info-label">Signal duration</div>
+            </div>
+        </div>
+        
+        <div class="info-panel">
+            <h3>🔬 Classic Lorentz Measurement Theory</h3>
+            <p>
+                <strong>Standard Interpretation:</strong> In the classic Lorentz view, a moving rod physically contracts. 
+                To measure this contracted length, both endpoints must be marked simultaneously in the observer's frame.
+            </p>
+            <p>
+                <strong>Simultaneity is Key:</strong> In the observer's frame, both endpoints must be measured simultaneously. 
+                However, events that are simultaneous in one frame are not simultaneous in another frame - this is the 
+                relativity of simultaneity.
+            </p>
+            <p>
+                <strong>Measurement Methods:</strong>
+                • <em>Simultaneous:</em> Mark both endpoints at the same time in the observer's frame
+                • <em>Light Signal:</em> Send light pulses from the midpoint to both ends
+                • <em>Ruler:</em> Use a pre-calibrated ruler at rest in the observer's frame
+                • <em>Photography:</em> Account for light travel time from different parts of the rod
+            </p>
+            <p>
+                <strong>The Result:</strong> All proper measurement methods yield the same contracted length L = L₀/γ, 
+                confirming the reality of length contraction as a consequence of the geometry of spacetime.
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        const measurementCanvas = document.getElementById('measurementCanvas');
+        const mCtx = measurementCanvas.getContext('2d');
+        const spacetimeCanvas = document.getElementById('spacetimeCanvas');
+        const sCtx = spacetimeCanvas.getContext('2d');
+        
+        let measurementMode = 'simultaneous';
+        let velocity = 0.6;
+        let properLength = 200;
+        let measurementTime = 50;
+        let animationId = null;
+        let measurementInProgress = false;
+        let measurementProgress = 0;
+        let animationTime = 0;
+        let isAnimating = false;
+        
+        function setMeasurementMode(mode) {
+            measurementMode = mode;
+            document.querySelectorAll('.mode-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            updateVisualization();
+        }
+        
+        function calculateLorentzFactor(v) {
+            return 1 / Math.sqrt(1 - v * v);
+        }
+        
+        function drawRod(ctx, x, y, length, color, label, showMeasurement = false) {
+            const height = 30;
+            
+            // Draw rod
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y - height/2, length, height);
+            
+            // Draw endpoints
+            ctx.strokeStyle = '#2d3748';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(x, y - height/2 - 10);
+            ctx.lineTo(x, y + height/2 + 10);
+            ctx.moveTo(x + length, y - height/2 - 10);
+            ctx.lineTo(x + length, y + height/2 + 10);
+            ctx.stroke();
+            
+            // Label
+            ctx.fillStyle = '#2d3748';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, x + length/2, y - height/2 - 20);
+            
+            if (showMeasurement) {
+                // Draw measurement indicators
+                ctx.strokeStyle = '#f56565';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                
+                // Vertical measurement lines
+                ctx.beginPath();
+                ctx.moveTo(x, y - height/2 - 40);
+                ctx.lineTo(x, y + height/2 + 40);
+                ctx.moveTo(x + length, y - height/2 - 40);
+                ctx.lineTo(x + length, y + height/2 + 40);
+                ctx.stroke();
+                
+                // Horizontal measurement line
+                ctx.beginPath();
+                ctx.moveTo(x, y + height/2 + 30);
+                ctx.lineTo(x + length, y + height/2 + 30);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // Measurement label
+                ctx.fillStyle = '#f56565';
+                ctx.font = 'bold 12px Arial';
+                ctx.fillText(`L = ${length.toFixed(0)}`, x + length/2, y + height/2 + 50);
+            }
+        }
+        
+        function drawLightSignals(ctx, centerX, centerY, radius, progress) {
+            if (progress <= 0) return;
+            
+            ctx.strokeStyle = '#f6ad55';
+            ctx.lineWidth = 3;
+            ctx.globalAlpha = Math.max(0, 1 - progress);
+            
+            // Draw expanding light circles
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius * progress, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Draw light rays
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 2;
+            const numRays = 8;
+            for (let i = 0; i < numRays; i++) {
+                const angle = (i / numRays) * Math.PI * 2;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(
+                    centerX + Math.cos(angle) * radius * progress,
+                    centerY + Math.sin(angle) * radius * progress
+                );
+                ctx.stroke();
+            }
+            
+            ctx.globalAlpha = 1;
+        }
+        
+        function drawRuler(ctx, x, y, length, divisions = 10) {
+            const height = 20;
+            
+            // Draw ruler body
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillRect(x, y - height/2, length, height);
+            
+            // Draw ruler markings
+            ctx.strokeStyle = '#2d3748';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= divisions; i++) {
+                const markX = x + (i / divisions) * length;
+                const markHeight = (i % 5 === 0) ? 15 : 10;
+                ctx.beginPath();
+                ctx.moveTo(markX, y - markHeight/2);
+                ctx.lineTo(markX, y + markHeight/2);
+                ctx.stroke();
+            }
+            
+            // Label
+            ctx.fillStyle = '#2d3748';
+            ctx.font = '10px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Observer\'s Ruler', x + length/2, y + height/2 + 15);
+        }
+        
+        function drawSpacetimeDiagram() {
+            sCtx.clearRect(0, 0, spacetimeCanvas.width, spacetimeCanvas.height);
+            
+            const centerX = 200;
+            const centerY = 350;
+            const scale = 2;
+            
+            // Draw axes
+            sCtx.strokeStyle = '#4a5568';
+            sCtx.lineWidth = 2;
+            
+            // Space axis (x)
+            sCtx.beginPath();
+            sCtx.moveTo(50, centerY);
+            sCtx.lineTo(1150, centerY);
+            sCtx.stroke();
+            
+            // Time axis (ct)
+            sCtx.beginPath();
+            sCtx.moveTo(centerX, 50);
+            sCtx.lineTo(centerX, 380);
+            sCtx.stroke();
+            
+            // Labels
+            sCtx.fillStyle = '#2d3748';
+            sCtx.font = 'bold 14px Arial';
+            sCtx.textAlign = 'center';
+            sCtx.fillText('x (space)', 1100, centerY + 25);
+            sCtx.fillText('ct (time)', centerX - 30, 70);
+            
+            // Draw light cone
+            sCtx.strokeStyle = '#fbbf24';
+            sCtx.lineWidth = 2;
+            sCtx.setLineDash([5, 5]);
+            
+            // Future light cone
+            sCtx.beginPath();
+            sCtx.moveTo(centerX, centerY);
+            sCtx.lineTo(centerX + 150, centerY - 150);
+            sCtx.moveTo(centerX, centerY);
+            sCtx.lineTo(centerX - 150, centerY - 150);
+            sCtx.stroke();
+            
+            // Past light cone
+            sCtx.beginPath();
+            sCtx.moveTo(centerX, centerY);
+            sCtx.lineTo(centerX + 150, centerY + 30);
+            sCtx.moveTo(centerX, centerY);
+            sCtx.lineTo(centerX - 150, centerY + 30);
+            sCtx.stroke();
+            sCtx.setLineDash([]);
+            
+            // Draw world lines of rod endpoints
+            const gamma = calculateLorentzFactor(velocity);
+            const contractedLength = properLength / gamma;
+            const angle = Math.atan(velocity);
+            
+            // Front endpoint worldline
+            sCtx.strokeStyle = '#4299e1';
+            sCtx.lineWidth = 3;
+            sCtx.beginPath();
+            sCtx.moveTo(centerX + properLength/2, centerY);
+            sCtx.lineTo(centerX + properLength/2 + 200 * Math.sin(angle), centerY - 200 * Math.cos(angle));
+            sCtx.stroke();
+            
+            // Rear endpoint worldline
+            sCtx.strokeStyle = '#e53e3e';
+            sCtx.lineWidth = 3;
+            sCtx.beginPath();
+            sCtx.moveTo(centerX - properLength/2, centerY);
+            sCtx.lineTo(centerX - properLength/2 + 200 * Math.sin(angle), centerY - 200 * Math.cos(angle));
+            sCtx.stroke();
+            
+            // Draw simultaneity lines
+            if (measurementMode === 'simultaneous') {
+                // Observer's simultaneity line (horizontal)
+                sCtx.strokeStyle = '#48bb78';
+                sCtx.lineWidth = 2;
+                const measY = centerY - measurementTime * 2;
+                sCtx.beginPath();
+                sCtx.moveTo(50, measY);
+                sCtx.lineTo(1150, measY);
+                sCtx.stroke();
+                
+                // Mark measurement events
+                const frontX = centerX + properLength/2 + measurementTime * 2 * Math.sin(angle);
+                const rearX = centerX - properLength/2 + measurementTime * 2 * Math.sin(angle);
+                
+                sCtx.fillStyle = '#48bb78';
+                sCtx.beginPath();
+                sCtx.arc(frontX, measY, 8, 0, Math.PI * 2);
+                sCtx.arc(rearX, measY, 8, 0, Math.PI * 2);
+                sCtx.fill();
+                
+                // Show measured length
+                sCtx.strokeStyle = '#48bb78';
+                sCtx.lineWidth = 3;
+                sCtx.beginPath();
+                sCtx.moveTo(rearX, measY + 20);
+                sCtx.lineTo(frontX, measY + 20);
+                sCtx.stroke();
+                
+                sCtx.fillStyle = '#48bb78';
+                sCtx.font = 'bold 12px Arial';
+                sCtx.textAlign = 'center';
+                sCtx.fillText(`Measured L = ${(frontX - rearX).toFixed(0)}`, (frontX + rearX)/2, measY + 40);
+                
+                // Rod's simultaneity line (tilted)
+                sCtx.strokeStyle = '#9f7aea';
+                sCtx.lineWidth = 2;
+                sCtx.setLineDash([5, 5]);
+                const tilt = velocity;
+                sCtx.beginPath();
+                sCtx.moveTo(rearX - 100, measY + 100 * tilt);
+                sCtx.lineTo(frontX + 100, measY - 100 * tilt);
+                sCtx.stroke();
+                sCtx.setLineDash([]);
+                
+                sCtx.fillStyle = '#9f7aea';
+                sCtx.font = '11px Arial';
+                sCtx.fillText('Rod simultaneity', frontX + 50, measY - 50 * tilt);
+            }
+            
+            // Draw measurement mode indicator
+            sCtx.fillStyle = '#667eea';
+            sCtx.font = 'bold 16px Arial';
+            sCtx.textAlign = 'left';
+            sCtx.fillText(`Mode: ${measurementMode}`, 50, 30);
+        }
+        
+        function updateVisualization(useAnimationTime = false) {
+            // Clear main canvas
+            mCtx.clearRect(0, 0, measurementCanvas.width, measurementCanvas.height);
+            
+            const gamma = calculateLorentzFactor(velocity);
+            const contractedLength = properLength / gamma;
+            const time = useAnimationTime ? animationTime : measurementTime;
+            const rodX = 300 + velocity * time * 5;
+            
+            // Draw grid
+            mCtx.strokeStyle = '#e2e8f0';
+            mCtx.lineWidth = 1;
+            for (let x = 50; x <= 1150; x += 50) {
+                mCtx.beginPath();
+                mCtx.moveTo(x, 100);
+                mCtx.lineTo(x, 400);
+                mCtx.stroke();
+            }
+            
+            // Draw ground line
+            mCtx.strokeStyle = '#cbd5e0';
+            mCtx.lineWidth = 2;
+            mCtx.beginPath();
+            mCtx.moveTo(50, 300);
+            mCtx.lineTo(1150, 300);
+            mCtx.stroke();
+            
+            // Draw different measurement scenarios
+            switch(measurementMode) {
+                case 'simultaneous':
+                    // Draw stationary markers at measurement points
+                    const frontX = rodX + contractedLength;
+                    const rearX = rodX;
+                    
+                    // Draw measurement apparatus
+                    mCtx.strokeStyle = '#48bb78';
+                    mCtx.lineWidth = 3;
+                    mCtx.setLineDash([10, 5]);
+                    mCtx.beginPath();
+                    mCtx.moveTo(rearX, 150);
+                    mCtx.lineTo(rearX, 350);
+                    mCtx.moveTo(frontX, 150);
+                    mCtx.lineTo(frontX, 350);
+                    mCtx.stroke();
+                    mCtx.setLineDash([]);
+                    
+                    // Draw clocks showing simultaneity
+                    drawClock(mCtx, rearX, 120, measurementTime, 'Observer Clock');
+                    drawClock(mCtx, frontX, 120, measurementTime, 'Observer Clock');
+                    
+                    // Draw the rod
+                    drawRod(mCtx, rodX, 250, contractedLength, '#e53e3e', 
+                           `Moving Rod (v = ${(velocity * 100).toFixed(0)}% c)`, true);
+                    
+                    // Simultaneity indicator
+                    mCtx.fillStyle = '#48bb78';
+                    mCtx.font = 'bold 14px Arial';
+                    mCtx.textAlign = 'center';
+                    mCtx.fillText('SIMULTANEOUS MEASUREMENT', 600, 380);
+                    break;
+                    
+                case 'light-signal':
+                    // Draw rod
+                    drawRod(mCtx, rodX, 250, contractedLength, '#e53e3e', 
+                           `Moving Rod (v = ${(velocity * 100).toFixed(0)}% c)`);
+                    
+                    // Draw light source at midpoint
+                    const midX = rodX + contractedLength / 2;
+                    mCtx.fillStyle = '#fbbf24';
+                    mCtx.beginPath();
+                    mCtx.arc(midX, 250, 10, 0, Math.PI * 2);
+                    mCtx.fill();
+                    
+                    // Draw light signals if measurement in progress
+                    if (measurementInProgress) {
+                        drawLightSignals(mCtx, midX, 250, contractedLength/2, measurementProgress);
+                    }
+                    
+                    mCtx.fillStyle = '#f6ad55';
+                    mCtx.font = 'bold 14px Arial';
+                    mCtx.textAlign = 'center';
+                    mCtx.fillText('LIGHT SIGNAL METHOD', 600, 380);
+                    break;
+                    
+                case 'ruler':
+                    // Draw calibrated ruler
+                    drawRuler(mCtx, 200, 350, 800, 40);
+                    
+                    // Draw rod above ruler
+                    drawRod(mCtx, rodX, 250, contractedLength, '#e53e3e', 
+                           `Moving Rod (v = ${(velocity * 100).toFixed(0)}% c)`);
+                    
+                    // Draw measurement marks
+                    mCtx.strokeStyle = '#667eea';
+                    mCtx.lineWidth = 2;
+                    mCtx.beginPath();
+                    mCtx.moveTo(rodX, 280);
+                    mCtx.lineTo(rodX, 340);
+                    mCtx.moveTo(rodX + contractedLength, 280);
+                    mCtx.lineTo(rodX + contractedLength, 340);
+                    mCtx.stroke();
+                    
+                    mCtx.fillStyle = '#667eea';
+                    mCtx.font = 'bold 14px Arial';
+                    mCtx.textAlign = 'center';
+                    mCtx.fillText('RULER MEASUREMENT', 600, 380);
+                    break;
+                    
+                case 'photography':
+                    // Draw camera
+                    mCtx.fillStyle = '#4a5568';
+                    mCtx.fillRect(100, 230, 40, 40);
+                    mCtx.fillStyle = '#2d3748';
+                    mCtx.beginPath();
+                    mCtx.arc(120, 250, 15, 0, Math.PI * 2);
+                    mCtx.fill();
+                    mCtx.fillStyle = '#667eea';
+                    mCtx.beginPath();
+                    mCtx.arc(120, 250, 8, 0, Math.PI * 2);
+                    mCtx.fill();
+                    
+                    // Draw light rays from rod to camera
+                    mCtx.strokeStyle = '#fbbf24';
+                    mCtx.lineWidth = 2;
+                    mCtx.setLineDash([5, 3]);
+                    mCtx.globalAlpha = 0.5;
+                    mCtx.beginPath();
+                    mCtx.moveTo(rodX, 250);
+                    mCtx.lineTo(120, 250);
+                    mCtx.moveTo(rodX + contractedLength, 250);
+                    mCtx.lineTo(120, 250);
+                    mCtx.stroke();
+                    mCtx.setLineDash([]);
+                    mCtx.globalAlpha = 1;
+                    
+                    // Draw rod
+                    drawRod(mCtx, rodX, 250, contractedLength, '#e53e3e', 
+                           `Moving Rod (v = ${(velocity * 100).toFixed(0)}% c)`, true);
+                    
+                    // Light travel time indicators
+                    const rearLightTime = (rodX - 120) / 300; // c = 300 pixels/time unit
+                    const frontLightTime = (rodX + contractedLength - 120) / 300;
+                    
+                    mCtx.fillStyle = '#f6ad55';
+                    mCtx.font = '11px Arial';
+                    mCtx.fillText(`Δt_rear = ${rearLightTime.toFixed(2)}`, rodX, 230);
+                    mCtx.fillText(`Δt_front = ${frontLightTime.toFixed(2)}`, rodX + contractedLength, 230);
+                    
+                    mCtx.fillStyle = '#9f7aea';
+                    mCtx.font = 'bold 14px Arial';
+                    mCtx.textAlign = 'center';
+                    mCtx.fillText('PHOTOGRAPHIC METHOD', 600, 380);
+                    break;
+            }
+            
+            // Update info displays
+            document.getElementById('gammaValue').textContent = gamma.toFixed(3);
+            document.getElementById('measuredLength').textContent = contractedLength.toFixed(1);
+            document.getElementById('frontPosition').textContent = (rodX + contractedLength).toFixed(1);
+            document.getElementById('rearPosition').textContent = rodX.toFixed(1);
+            
+            // Calculate simultaneity difference in rod frame
+            const simultaneityDiff = (contractedLength * velocity) / (1 - velocity * velocity);
+            document.getElementById('simultaneityDiff').textContent = simultaneityDiff.toFixed(2);
+            
+            // Light travel time for light-signal method
+            const lightTime = contractedLength / (2 * 300); // Half length / c
+            document.getElementById('lightTime').textContent = lightTime.toFixed(3);
+            
+            // Draw spacetime diagram
+            drawSpacetimeDiagram();
+        }
+        
+        function drawClock(ctx, x, y, time, label) {
+            const radius = 25;
+            
+            // Clock face
+            ctx.fillStyle = 'white';
+            ctx.strokeStyle = '#4a5568';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            
+            // Clock hands
+            const angle = (time / 100) * Math.PI * 2 - Math.PI / 2;
+            ctx.strokeStyle = '#2d3748';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + Math.cos(angle) * radius * 0.7, y + Math.sin(angle) * radius * 0.7);
+            ctx.stroke();
+            
+            // Center dot
+            ctx.fillStyle = '#2d3748';
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Label
+            ctx.font = '10px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, x, y + radius + 15);
+            ctx.fillText(`t = ${time.toFixed(0)}`, x, y + radius + 28);
+        }
+        
+        function toggleAnimation() {
+            if (isAnimating) {
+                isAnimating = false;
+                cancelAnimationFrame(animationId);
+                document.querySelector('button').textContent = '▶️ Start Animation';
+                animationTime = measurementTime;
+                updateVisualization(false);
+            } else {
+                isAnimating = true;
+                animationTime = 0;
+                animate();
+                document.querySelector('button').textContent = '⏸️ Stop Animation';
+            }
+        }
+        
+        function animate() {
+            if (!isAnimating) return;
+            
+            animationTime += 0.5;
+            if (animationTime > 100) {
+                animationTime = 0;
+            }
+            
+            // Update measurement progress for light signal mode
+            if (measurementMode === 'light-signal') {
+                measurementProgress = (animationTime % 20) / 20;
+                measurementInProgress = measurementProgress > 0;
+            }
+            
+            updateVisualization(true);
+            
+            // Update time display during animation
+            document.getElementById('timeValue').textContent = 't = ' + animationTime.toFixed(0);
+            
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        function performMeasurement() {
+            measurementInProgress = true;
+            measurementProgress = 0;
+            
+            function animateMeasurement() {
+                measurementProgress += 0.02;
+                
+                if (measurementProgress > 1) {
+                    measurementInProgress = false;
+                    measurementProgress = 0;
+                    cancelAnimationFrame(animationId);
+                    
+                    // Flash result
+                    setTimeout(() => {
+                        const cards = document.querySelectorAll('.info-card');
+                        cards.forEach(card => {
+                            card.style.transform = 'scale(1.05)';
+                            card.style.transition = 'transform 0.3s';
+                        });
+                        setTimeout(() => {
+                            cards.forEach(card => {
+                                card.style.transform = 'scale(1)';
+                            });
+                        }, 300);
+                    }, 100);
+                }
+                
+                updateVisualization();
+                
+                if (measurementInProgress) {
+                    animationId = requestAnimationFrame(animateMeasurement);
+                }
+            }
+            
+            animateMeasurement();
+        }
+        
+        // Event listeners
+        document.getElementById('velocity').addEventListener('input', (e) => {
+            velocity = parseFloat(e.target.value);
+            document.getElementById('velocityValue').textContent = (velocity * 100).toFixed(0) + '% c';
+            updateVisualization();
+        });
+        
+        document.getElementById('properLength').addEventListener('input', (e) => {
+            properLength = parseFloat(e.target.value);
+            document.getElementById('lengthValue').textContent = properLength + ' units';
+            updateVisualization();
+        });
+        
+        document.getElementById('measurementTime').addEventListener('input', (e) => {
+            measurementTime = parseFloat(e.target.value);
+            document.getElementById('timeValue').textContent = 't = ' + measurementTime;
+            updateVisualization();
+        });
+        
+        // Initial render
+        updateVisualization();
+    </script>
+</body>
+</html>
