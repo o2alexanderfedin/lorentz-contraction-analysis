@@ -39,10 +39,6 @@ This repository contains a comprehensive analysis of Lorentz contraction in spec
 - Shows light signal propagation from events to central detector
 - Adjustable parameters for event timing and observer velocity
 
-#### 4. Point Particle Motion (`point_particle_motion.html`)
-- Non-relativistic version for comparison
-- Clear visualization of acceleration and uniform motion phases
-- Helpful for understanding the basic kinematics before relativistic effects
 
 ## Key Physics Concepts
 
