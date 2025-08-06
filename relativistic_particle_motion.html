@@ -295,7 +295,7 @@
             </div>
             
             <div class="control-group">
-                <button onclick="startAnimation()">🚀 Launch Particle</button>
+                <button onclick="resetAnimation()">🔄 Reset Position</button>
             </div>
         </div>
         
@@ -908,10 +908,20 @@
             
             if (currentT < maxTime) {
                 animationId = requestAnimationFrame(animate);
+            } else {
+                // Auto-restart after completion
+                setTimeout(() => {
+                    startTime = null;
+                    currentT = 0;
+                    positionData = [];
+                    velocityData = [];
+                    distanceData = [];
+                    animate();
+                }, 1500);
             }
         }
         
-        function startAnimation() {
+        function resetAnimation() {
             // Reset
             if (animationId) {
                 cancelAnimationFrame(animationId);
@@ -963,6 +973,11 @@
         drawAxes(posCtx, posCanvas, 'Time (seconds)', 'Position (light-seconds)', 10, 5);
         drawAxes(velCtx, velCanvas, 'Time (seconds)', 'Velocity (c)', 10, 1.1);
         drawAxes(distCtx, distCanvas, 'Time (seconds)', 'Distance from X₀ (light-seconds)', 10, 5);
+        
+        // Auto-start animation
+        setTimeout(() => {
+            animate();
+        }, 500);
     </script>
 </body>
 </html>

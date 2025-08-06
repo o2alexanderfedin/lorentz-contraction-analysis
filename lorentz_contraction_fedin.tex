@@ -35,35 +35,36 @@ Here, we construct a precise thought experiment in which all aspects—initial c
 
 \section{Experimental Setup}
 
-We consider two point-like objects, $A_1$ and $A_2$, initially at rest in the observer’s inertial frame. They are separated by distance $D$. At $t = 0$, both undergo identical proper acceleration $G$ for a fixed duration $T$, after which they continue in uniform motion at $v = GT$.
+We consider two point-like objects, $P_0$ and $P_1$, initially at rest in the observer's inertial frame. They are separated by distance $D$. At $t = T_0$, both undergo identical proper acceleration $G$ for a fixed duration until $t = T_1$, after which they continue in uniform motion at $v = G(T_1 - T_0)$ until detection at $t = T_2$.
 
 The configuration ensures:
 
 \begin{itemize}
-    \item Known rest length $D$ in the observer’s frame.
-    \item Identical acceleration profiles for both endpoints.
-    \item All timing and positioning measurements are made using synchronized clocks in the observer’s frame.
+    \item Known rest length $D$ in the observer's frame.
+    \item Identical acceleration profiles for both particles.
+    \item All timing and positioning measurements are made using synchronized clocks in the observer's frame.
+    \item Beam splitter detection with equal optical paths confirms simultaneous positions.
 \end{itemize}
 
 \section{Results}
 
-During acceleration ($0 \le t \le T$), the positions are:
+During acceleration ($T_0 \le t \le T_1$), the positions are:
 
 \begin{align*}
-    x_{A_1}(t) &= x_1 + \frac{1}{2}Gt^2, \\
-    x_{A_2}(t) &= x_1 + D + \frac{1}{2}Gt^2.
+    x_{P_0}(t) &= x_0 + \frac{1}{2}G(t - T_0)^2, \\
+    x_{P_1}(t) &= x_0 + D + \frac{1}{2}G(t - T_0)^2.
 \end{align*}
 
-After $t > T$, the motion becomes uniform:
+After $t > T_1$, the motion becomes uniform:
 
 \begin{align*}
-    x_{A_1}(t) &= x_{A_1}(T) + v(t - T), \\
-    x_{A_2}(t) &= x_{A_2}(T) + v(t - T).
+    x_{P_0}(t) &= x_{P_0}(T_1) + v(t - T_1), \\
+    x_{P_1}(t) &= x_{P_1}(T_1) + v(t - T_1).
 \end{align*}
 
 At all times:
 \[
-x_{A_2}(t) - x_{A_1}(t) = D.
+x_{P_1}(t) - x_{P_0}(t) = D.
 \]
 
 \section{Discussion}
@@ -88,12 +89,12 @@ The Lorentz contraction does not manifest in a scenario where the rod is defined
 \draw[->] (0, -0.5) -- (0, 6) node[left] {$t$};
 
 % Labels
-\node at (1.1, -0.3) {$x_1$};
-\node at (3.1, -0.3) {$x_2 = x_1 + D$};
+\node at (1.1, -0.3) {$x_0$};
+\node at (3.1, -0.3) {$x_0 + D$};
 
 % Worldlines (accelerated phase)
-\draw[thick, blue, domain=0:2, samples=100] plot (\x*\x/4 + 1, \x) node[right] {$A_1$};
-\draw[thick, red, domain=0:2, samples=100] plot (\x*\x/4 + 3, \x) node[right] {$A_2$};
+\draw[thick, blue, domain=0:2, samples=100] plot (\x*\x/4 + 1, \x) node[right] {$P_0$};
+\draw[thick, red, domain=0:2, samples=100] plot (\x*\x/4 + 3, \x) node[right] {$P_1$};
 
 % Uniform motion
 \draw[thick, blue] (2*2/4 + 1, 2) -- (6, 5);

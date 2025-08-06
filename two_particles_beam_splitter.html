@@ -199,7 +199,7 @@
             </div>
             
             <div class="control-group">
-                <button onclick="startAnimation()">▶️ Start Synchronized Detection</button>
+                <button onclick="resetAnimation()">🔄 Reset Animation</button>
             </div>
         </div>
         
@@ -668,18 +668,21 @@
             if (system.isRunning) {
                 animationId = requestAnimationFrame(animate);
             } else if (system.elapsed > T2) {
+                // Auto-restart after completion
                 setTimeout(() => {
                     system.reset();
-                    drawStaticElements();
-                    system.draw(ctx);
+                    system.start(G, T1, T2);
+                    startTime = null;
+                    lastTime = 0;
                     document.getElementById('t0Detection').textContent = 'Ready';
                     document.getElementById('t1Detection').textContent = 'Ready';
                     document.getElementById('t2Detection').textContent = 'Ready';
+                    animationId = requestAnimationFrame(animate);
                 }, 1000);
             }
         }
         
-        function startAnimation() {
+        function resetAnimation() {
             if (animationId) {
                 cancelAnimationFrame(animationId);
             }
@@ -700,6 +703,7 @@
             lasers[1].updatePosition(positions.midX1, D);
             lasers[2].updatePosition(positions.midX2, D);
             
+            system.reset();
             system.start(G, T1, T2);
             animationId = requestAnimationFrame(animate);
         }
@@ -749,9 +753,15 @@
             }
         });
         
-        // Initial draw
+        // Initial draw and auto-start
         drawStaticElements();
         system.draw(ctx);
+        
+        // Auto-start animation
+        setTimeout(() => {
+            system.start(G, T1, T2);
+            animationId = requestAnimationFrame(animate);
+        }, 500);
     </script>
 </body>
 </html>

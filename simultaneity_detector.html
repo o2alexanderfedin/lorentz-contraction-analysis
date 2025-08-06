@@ -226,7 +226,7 @@
             </div>
             
             <div class="control-group">
-                <button onclick="triggerEvents()">🚀 Trigger Events</button>
+                <button onclick="resetAnimation()">🔄 Reset Animation</button>
             </div>
         </div>
         
@@ -466,13 +466,22 @@
             drawLightSignals(currentTime);
             checkSimultaneity();
             
-            // Stop animation after 10 seconds
+            // Stop animation after 10 seconds then restart
             if (currentTime < 10000) {
                 animationId = requestAnimationFrame(animate);
+            } else {
+                // Auto-restart after a pause
+                setTimeout(() => {
+                    triggerNewCycle();
+                }, 1500);
             }
         }
         
-        function triggerEvents() {
+        function resetAnimation() {
+            triggerNewCycle();
+        }
+        
+        function triggerNewCycle() {
             // Reset
             if (animationId) {
                 cancelAnimationFrame(animationId);
@@ -530,6 +539,11 @@
         
         // Initial draw
         drawDevice();
+        
+        // Auto-start animation
+        setTimeout(() => {
+            triggerNewCycle();
+        }, 500);
     </script>
 </body>
 </html>

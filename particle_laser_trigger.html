@@ -186,9 +186,9 @@
         
         <div class="controls">
             <div class="control-group">
-                <label for="acceleration">Acceleration G (m/s²)</label>
+                <label for="acceleration">Acceleration G (units)</label>
                 <input type="range" id="acceleration" min="1" max="10" value="5" step="0.5">
-                <div class="value" id="accelerationValue">5.0 m/s²</div>
+                <div class="value" id="accelerationValue">5.0 units</div>
             </div>
             
             <div class="control-group">
@@ -204,7 +204,7 @@
             </div>
             
             <div class="control-group">
-                <button onclick="startAnimation()">▶️ Start Motion</button>
+                <button onclick="resetAnimation()">🔄 Reset Position</button>
             </div>
         </div>
         
@@ -589,25 +589,27 @@
             particleSystem.draw(ctx);
             
             // Update position displays
-            document.getElementById('x0Value').textContent = '0 m';
-            document.getElementById('x1Value').textContent = (0.5 * G * T1 * T1).toFixed(1) + ' m';
+            document.getElementById('x0Value').textContent = '0 units';
+            document.getElementById('x1Value').textContent = (0.5 * G * T1 * T1).toFixed(1) + ' units';
             const V1 = G * T1;
-            document.getElementById('x2Value').textContent = (0.5 * G * T1 * T1 + V1 * (T2 - T1)).toFixed(1) + ' m';
+            document.getElementById('x2Value').textContent = (0.5 * G * T1 * T1 + V1 * (T2 - T1)).toFixed(1) + ' units';
             
             // Continue animation if still running
             if (particleSystem.isRunning) {
                 animationId = requestAnimationFrame(animate);
             } else if (particleSystem.getElapsed() > T2) {
-                // Reset after completion
+                // Auto-restart after completion
                 setTimeout(() => {
                     particleSystem.reset();
-                    drawStaticElements();
-                    particleSystem.draw(ctx);
+                    particleSystem.start(G, T1, T2);
+                    startTime = null;
+                    lastTime = 0;
+                    animationId = requestAnimationFrame(animate);
                 }, 1000);
             }
         }
         
-        function startAnimation() {
+        function resetAnimation() {
             // Cancel any existing animation
             if (animationId) {
                 cancelAnimationFrame(animationId);
@@ -622,7 +624,8 @@
             T1 = parseFloat(document.getElementById('t1Time').value);
             T2 = parseFloat(document.getElementById('t2Time').value);
             
-            // Start particle system with new parameters
+            // Reset and restart particle system
+            particleSystem.reset();
             particleSystem.start(G, T1, T2);
             
             // Start animation
@@ -631,10 +634,8 @@
         
         // Update display values
         document.getElementById('acceleration').addEventListener('input', (e) => {
-            document.getElementById('accelerationValue').textContent = parseFloat(e.target.value).toFixed(1) + ' m/s²';
+            document.getElementById('accelerationValue').textContent = parseFloat(e.target.value).toFixed(1) + ' units';
             G = parseFloat(e.target.value);
-            drawStaticElements();
-            drawParticle(X0, 400, false);
         });
         
         document.getElementById('t1Time').addEventListener('input', (e) => {
@@ -647,8 +648,6 @@
                 document.getElementById('t2Value').textContent = (T1 + 1).toFixed(1) + ' s';
                 T2 = T1 + 1;
             }
-            drawStaticElements();
-            drawParticle(X0, 400, false);
         });
         
         document.getElementById('t2Time').addEventListener('input', (e) => {
@@ -656,8 +655,6 @@
             if (newT2 > T1) {
                 document.getElementById('t2Value').textContent = newT2.toFixed(1) + ' s';
                 T2 = newT2;
-                drawStaticElements();
-                drawParticle(X0, 400, false);
             } else {
                 e.target.value = T1 + 1;
                 document.getElementById('t2Value').textContent = (T1 + 1).toFixed(1) + ' s';
@@ -665,9 +662,13 @@
             }
         });
         
-        // Initial draw
+        // Initial draw and auto-start
         drawStaticElements();
         particleSystem.draw(ctx);
+        
+        // Auto-start animation
+        particleSystem.start(G, T1, T2);
+        animationId = requestAnimationFrame(animate);
     </script>
 </body>
 </html>
