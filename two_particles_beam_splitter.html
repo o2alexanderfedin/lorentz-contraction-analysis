@@ -176,26 +176,26 @@
         <div class="controls">
             <div class="control-group">
                 <label for="separation">Separation Distance D (light-seconds)</label>
-                <input type="range" id="separation" min="100" max="400" value="200" step="10">
-                <div class="value" id="separationValue">0.20 ls</div>
+                <input type="range" id="separation" min="100" max="400" value="130" step="10">
+                <div class="value" id="separationValue">0.13 ls</div>
             </div>
             
             <div class="control-group">
                 <label for="acceleration">Acceleration G (c/s)</label>
-                <input type="range" id="acceleration" min="0.01" max="0.1" value="0.05" step="0.005">
-                <div class="value" id="accelerationValue">0.050 c/s</div>
+                <input type="range" id="acceleration" min="0.01" max="0.15" value="0.1" step="0.005">
+                <div class="value" id="accelerationValue">0.100 c/s</div>
             </div>
             
             <div class="control-group">
                 <label for="t1Time">T₁ Time (seconds)</label>
-                <input type="range" id="t1Time" min="1" max="10" value="5" step="0.5">
-                <div class="value" id="t1Value">5.0 s</div>
+                <input type="range" id="t1Time" min="1" max="10" value="4" step="0.5">
+                <div class="value" id="t1Value">4.0 s</div>
             </div>
             
             <div class="control-group">
                 <label for="t2Time">T₂ Time (seconds)</label>
-                <input type="range" id="t2Time" min="6" max="20" value="10" step="0.5">
-                <div class="value" id="t2Value">10.0 s</div>
+                <input type="range" id="t2Time" min="5" max="20" value="7" step="0.5">
+                <div class="value" id="t2Value">7.0 s</div>
             </div>
             
             <div class="control-group">
@@ -550,10 +550,10 @@
         let lastTime = 0;
         
         // Physics parameters (relativistic units, c = 1)
-        let G = 0.05;  // acceleration in c/s
-        let T1 = 5;     // seconds
-        let T2 = 10;    // seconds  
-        let D = 200;    // pixels (represents 0.2 light-seconds)
+        let G = 0.1;   // acceleration in c/s
+        let T1 = 4;     // seconds
+        let T2 = 7;     // seconds  
+        let D = 130;    // pixels (represents 0.13 light-seconds)
         let X0_P0 = 300; // pixels
         
         // Create particles
