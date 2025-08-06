@@ -368,35 +368,73 @@
                 this.particle = particle;
                 this.lasers = lasers;
                 this.scale = 30;
+                this.elapsed = 0;
+                this.phase = 'idle';
+                this.G = 5;
+                this.T1 = 2;
+                this.T2 = 5;
+                this.isRunning = false;
             }
             
-            updatePhysics(elapsed, G, T1, T2) {
-                let x;
+            reset() {
+                this.elapsed = 0;
+                this.phase = 'idle';
+                this.particle.x = this.particle.x0;
+                this.particle.isActive = false;
+                this.particle.velocity = 0;
+                this.isRunning = false;
+            }
+            
+            start(G, T1, T2) {
+                this.G = G;
+                this.T1 = T1;
+                this.T2 = T2;
+                this.elapsed = 0;
+                this.isRunning = true;
+                this.particle.isActive = true;
+            }
+            
+            step(deltaTime) {
+                if (!this.isRunning) return;
                 
-                if (elapsed < T1) {
-                    // Acceleration phase
-                    x = this.particle.x0 + 0.5 * G * elapsed * elapsed * this.scale;
-                    this.particle.isActive = true;
-                } else if (elapsed < T2) {
-                    // Uniform motion phase
-                    const V1 = G * T1;
-                    const X1 = this.particle.x0 + 0.5 * G * T1 * T1 * this.scale;
-                    x = X1 + V1 * (elapsed - T1) * this.scale;
-                    this.particle.isActive = true;
+                this.elapsed += deltaTime;
+                let x, velocity;
+                
+                if (this.elapsed < this.T1) {
+                    // Phase 1: Acceleration
+                    this.phase = 'accelerating';
+                    x = this.particle.x0 + 0.5 * this.G * this.elapsed * this.elapsed * this.scale;
+                    velocity = this.G * this.elapsed;
+                } else if (this.elapsed < this.T2) {
+                    // Phase 2: Uniform motion
+                    this.phase = 'uniform';
+                    const V1 = this.G * this.T1;
+                    const X1 = this.particle.x0 + 0.5 * this.G * this.T1 * this.T1 * this.scale;
+                    x = X1 + V1 * (this.elapsed - this.T1) * this.scale;
+                    velocity = V1;
                 } else {
-                    // Detection phase
-                    const V1 = G * T1;
-                    const X1 = this.particle.x0 + 0.5 * G * T1 * T1 * this.scale;
-                    x = Math.min(X1 + V1 * (T2 - T1) * this.scale, 850);
-                    this.particle.isActive = true;
+                    // Phase 3: Detection complete
+                    this.phase = 'detected';
+                    const V1 = this.G * this.T1;
+                    const X1 = this.particle.x0 + 0.5 * this.G * this.T1 * this.T1 * this.scale;
+                    x = Math.min(X1 + V1 * (this.T2 - this.T1) * this.scale, 850);
+                    velocity = V1;
+                    
+                    // Stop after detection
+                    if (this.elapsed > this.T2 + 1) {
+                        this.isRunning = false;
+                    }
                 }
                 
                 this.particle.updatePosition(x);
+                this.particle.velocity = velocity;
                 
                 // Update laser detection states
                 this.lasers.forEach(laser => {
                     laser.checkDetection(this.particle.x);
                 });
+                
+                return this.phase;
             }
             
             draw(ctx) {
@@ -405,6 +443,26 @@
                 
                 // Draw particle
                 this.particle.draw(ctx);
+                
+                // Draw motion trail if particle is moving
+                if (this.particle.isActive && this.particle.x > this.particle.x0) {
+                    ctx.strokeStyle = 'rgba(118, 75, 162, 0.3)';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([5, 3]);
+                    ctx.beginPath();
+                    ctx.moveTo(this.particle.x0, 400);
+                    ctx.lineTo(this.particle.x - 15, 400);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+            }
+            
+            getElapsed() {
+                return this.elapsed;
+            }
+            
+            getPhase() {
+                return this.phase;
             }
         }
         
@@ -494,47 +552,41 @@
         
         // Note: drawLaser and drawParticle functions are now replaced by class methods
         
+        let lastTime = 0;
+        
         function animate(timestamp) {
-            if (!startTime) startTime = timestamp;
-            const elapsed = (timestamp - startTime) / 1000; // Convert to seconds
+            if (!startTime) {
+                startTime = timestamp;
+                lastTime = timestamp;
+            }
             
+            // Calculate delta time in seconds
+            const deltaTime = (timestamp - lastTime) / 1000;
+            lastTime = timestamp;
+            
+            // Draw static elements
             const positions = drawStaticElements();
             
-            let particleX = X0;
-            let particleActive = false;
+            // Step the particle system
+            const phase = particleSystem.step(deltaTime);
             
             // Update phase indicators
             document.querySelectorAll('.phase-box').forEach(box => box.classList.remove('active'));
             
-            // Update particle system physics
-            particleSystem.updatePhysics(elapsed, G, T1, T2);
-            
-            // Update phase based on elapsed time
-            if (elapsed < T1) {
-                currentPhase = 'accelerating';
-                document.getElementById('phase-t0').classList.add('active');
-            } else if (elapsed < T2) {
-                currentPhase = 'uniform';
-                document.getElementById('phase-t1').classList.add('active');
-            } else {
-                currentPhase = 'detected';
-                document.getElementById('phase-t2').classList.add('active');
+            switch(phase) {
+                case 'accelerating':
+                    document.getElementById('phase-t0').classList.add('active');
+                    break;
+                case 'uniform':
+                    document.getElementById('phase-t1').classList.add('active');
+                    break;
+                case 'detected':
+                    document.getElementById('phase-t2').classList.add('active');
+                    break;
             }
             
             // Draw particle system (particle and lasers)
             particleSystem.draw(ctx);
-            
-            // Draw motion trail
-            if (particleActive && particleX > X0) {
-                ctx.strokeStyle = 'rgba(118, 75, 162, 0.3)';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([5, 3]);
-                ctx.beginPath();
-                ctx.moveTo(X0, 400);
-                ctx.lineTo(particleX - 15, 400);
-                ctx.stroke();
-                ctx.setLineDash([]);
-            }
             
             // Update position displays
             document.getElementById('x0Value').textContent = '0 m';
@@ -542,14 +594,13 @@
             const V1 = G * T1;
             document.getElementById('x2Value').textContent = (0.5 * G * T1 * T1 + V1 * (T2 - T1)).toFixed(1) + ' m';
             
-            // Continue animation
-            if (elapsed < T2 + 1) {
+            // Continue animation if still running
+            if (particleSystem.isRunning) {
                 animationId = requestAnimationFrame(animate);
-            } else {
+            } else if (particleSystem.getElapsed() > T2) {
                 // Reset after completion
                 setTimeout(() => {
-                    particle.x = X0;
-                    particle.isActive = false;
+                    particleSystem.reset();
                     drawStaticElements();
                     particleSystem.draw(ctx);
                 }, 1000);
@@ -564,12 +615,15 @@
             
             // Reset
             startTime = null;
-            currentPhase = 'idle';
+            lastTime = 0;
             
             // Get current parameters
             G = parseFloat(document.getElementById('acceleration').value);
             T1 = parseFloat(document.getElementById('t1Time').value);
             T2 = parseFloat(document.getElementById('t2Time').value);
+            
+            // Start particle system with new parameters
+            particleSystem.start(G, T1, T2);
             
             // Start animation
             animationId = requestAnimationFrame(animate);
