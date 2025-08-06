@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Particle Laser Trigger System - P₀ Motion with Laser Signaling</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: white;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 1200px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            color: #333;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #764ba2;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .canvas-container {
+            position: relative;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            background: white;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        
+        .control-group .value {
+            text-align: center;
+            font-size: 1.2em;
+            color: #764ba2;
+            font-weight: bold;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+            width: 100%;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(118, 75, 162, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .info-panel {
+            background: linear-gradient(135deg, #f0e6ff 0%, #e6f2ff 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #764ba2;
+        }
+        
+        .info-panel h3 {
+            color: #764ba2;
+            margin-bottom: 10px;
+        }
+        
+        .info-panel p {
+            line-height: 1.6;
+            color: #4a5568;
+            margin-bottom: 10px;
+        }
+        
+        .phase-indicators {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .phase-box {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            text-align: center;
+        }
+        
+        .phase-box.active {
+            border-color: #764ba2;
+            background: linear-gradient(135deg, #f0e6ff 0%, #e6f2ff 100%);
+        }
+        
+        .phase-box h4 {
+            color: #764ba2;
+            margin-bottom: 5px;
+        }
+        
+        .phase-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .phase-label {
+            color: #718096;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Particle Laser Trigger System</h1>
+        <p class="subtitle">P₀ Motion with Laser Triggering at T₀ and Detection at T₂</p>
+        
+        <div class="canvas-container">
+            <canvas id="motionCanvas" width="1000" height="500"></canvas>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="acceleration">Acceleration G (m/s²)</label>
+                <input type="range" id="acceleration" min="1" max="10" value="5" step="0.5">
+                <div class="value" id="accelerationValue">5.0 m/s²</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="t1Time">T₁ Time (seconds)</label>
+                <input type="range" id="t1Time" min="1" max="5" value="2" step="0.1">
+                <div class="value" id="t1Value">2.0 s</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="t2Time">T₂ Time (seconds)</label>
+                <input type="range" id="t2Time" min="3" max="10" value="5" step="0.1">
+                <div class="value" id="t2Value">5.0 s</div>
+            </div>
+            
+            <div class="control-group">
+                <button onclick="startAnimation()">▶️ Start Motion</button>
+            </div>
+        </div>
+        
+        <div class="phase-indicators">
+            <div class="phase-box" id="phase-t0">
+                <h4>T₀: Start Signal</h4>
+                <div class="phase-value" id="x0Value">X₀</div>
+                <div class="phase-label">Laser triggers acceleration</div>
+            </div>
+            <div class="phase-box" id="phase-t1">
+                <h4>T₁: End Acceleration</h4>
+                <div class="phase-value" id="x1Value">X₁</div>
+                <div class="phase-label">Constant velocity begins</div>
+            </div>
+            <div class="phase-box" id="phase-t2">
+                <h4>T₂: Detection</h4>
+                <div class="phase-value" id="x2Value">X₂</div>
+                <div class="phase-label">Laser detects position</div>
+            </div>
+        </div>
+        
+        <div class="info-panel">
+            <h3>📊 Motion Phases with Laser Detection</h3>
+            <p>
+                <strong>T₀ (Start):</strong> P₀ is at rest at position X₀. Laser detector at X₀ triggers P₀ to begin accelerating with constant acceleration G.
+            </p>
+            <p>
+                <strong>T₀ → T₁ (Acceleration):</strong> P₀ accelerates uniformly. Position: x(t) = X₀ + ½G(t-T₀)². Velocity: v(t) = G(t-T₀).
+            </p>
+            <p>
+                <strong>T₁ (Transition):</strong> Laser detector at X₁ registers P₀ passing through. P₀ stops accelerating and continues with constant velocity V₁ = G(T₁-T₀).
+            </p>
+            <p>
+                <strong>T₁ → T₂ (Uniform Motion):</strong> P₀ moves at constant velocity. Position: x(t) = X₁ + V₁(t-T₁).
+            </p>
+            <p>
+                <strong>T₂ (Final Detection):</strong> Laser detector at X₂ registers P₀ at position X₂ = X₁ + V₁(T₂-T₁).
+            </p>
+            <p style="margin-top: 10px; font-style: italic;">
+                All three positions X₀, X₁, and X₂ have laser detectors that register P₀ as it passes through each location.
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('motionCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let animationId = null;
+        let startTime = null;
+        let currentPhase = 'idle';
+        
+        // Physics parameters
+        let G = 5; // acceleration
+        let T1 = 2; // time when acceleration stops
+        let T2 = 5; // time of detection
+        let X0 = 100; // initial position
+        
+        function drawStaticElements() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw coordinate system
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 2;
+            
+            // X-axis
+            ctx.beginPath();
+            ctx.moveTo(50, 400);
+            ctx.lineTo(950, 400);
+            ctx.stroke();
+            
+            // Draw ticks and labels
+            ctx.fillStyle = '#4a5568';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            
+            // X₀ marker
+            ctx.beginPath();
+            ctx.moveTo(X0, 395);
+            ctx.lineTo(X0, 405);
+            ctx.stroke();
+            ctx.fillText('X₀', X0, 425);
+            
+            // Calculate X₁ and X₂
+            const X1 = X0 + 0.5 * G * T1 * T1 * 50; // scaled for visualization
+            const V1 = G * T1;
+            const X2 = X1 + V1 * (T2 - T1) * 50; // scaled for visualization
+            
+            // X₁ marker
+            ctx.beginPath();
+            ctx.moveTo(X1, 395);
+            ctx.lineTo(X1, 405);
+            ctx.stroke();
+            ctx.fillText('X₁', X1, 425);
+            
+            // X₂ marker
+            ctx.beginPath();
+            ctx.moveTo(X2, 395);
+            ctx.lineTo(X2, 405);
+            ctx.stroke();
+            ctx.fillText('X₂', X2, 425);
+            
+            // Draw laser detectors at all three positions
+            drawLaser(X0, 100, 'Laser T₀', '#48bb78');
+            drawLaser(X1, 100, 'Laser T₁', '#f6ad55');
+            drawLaser(X2, 100, 'Laser T₂', '#f56565');
+            
+            return { X1, X2, V1 };
+        }
+        
+        function drawLaser(x, y, label, color) {
+            // Laser emitter
+            ctx.fillStyle = color;
+            ctx.fillRect(x - 15, y - 30, 30, 25);
+            
+            // Laser beam (vertical)
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 3;
+            ctx.setLineDash([10, 5]);
+            ctx.globalAlpha = 0.6;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x, 400);
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+            ctx.setLineDash([]);
+            
+            // Label
+            ctx.fillStyle = '#2d3748';
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, x, y - 40);
+        }
+        
+        function drawParticle(x, y, isActive) {
+            // Draw P₀
+            ctx.fillStyle = isActive ? '#764ba2' : '#cbd5e0';
+            ctx.beginPath();
+            ctx.arc(x, y, 15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.strokeStyle = isActive ? '#553c9a' : '#a0aec0';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Label
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('P₀', x, y + 5);
+            
+            // Motion arrow if moving
+            if (isActive && x > X0 + 10) {
+                ctx.strokeStyle = '#48bb78';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(x + 20, y);
+                ctx.lineTo(x + 60, y);
+                ctx.stroke();
+                
+                // Arrowhead
+                ctx.beginPath();
+                ctx.moveTo(x + 60, y);
+                ctx.lineTo(x + 50, y - 8);
+                ctx.lineTo(x + 50, y + 8);
+                ctx.closePath();
+                ctx.fillStyle = '#48bb78';
+                ctx.fill();
+            }
+        }
+        
+        function animate(timestamp) {
+            if (!startTime) startTime = timestamp;
+            const elapsed = (timestamp - startTime) / 1000; // Convert to seconds
+            
+            const positions = drawStaticElements();
+            
+            let particleX = X0;
+            let particleActive = false;
+            
+            // Update phase indicators
+            document.querySelectorAll('.phase-box').forEach(box => box.classList.remove('active'));
+            
+            if (elapsed < T1) {
+                // Acceleration phase
+                particleX = X0 + 0.5 * G * elapsed * elapsed * 50; // scaled
+                particleActive = true;
+                currentPhase = 'accelerating';
+                document.getElementById('phase-t0').classList.add('active');
+                
+                // Draw T₀ laser flash at start
+                if (elapsed < 0.5) {
+                    ctx.fillStyle = 'rgba(72, 187, 120, 0.3)';
+                    ctx.beginPath();
+                    ctx.arc(X0, 400, 30, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else if (elapsed < T2) {
+                // Uniform motion phase
+                const V1 = G * T1;
+                particleX = positions.X1 + V1 * (elapsed - T1) * 50; // scaled
+                particleActive = true;
+                currentPhase = 'uniform';
+                document.getElementById('phase-t1').classList.add('active');
+                
+                // Draw T₁ laser flash at transition
+                if (elapsed >= T1 && elapsed < T1 + 0.5) {
+                    ctx.fillStyle = 'rgba(246, 173, 85, 0.3)';
+                    ctx.beginPath();
+                    ctx.arc(positions.X1, 400, 30, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else {
+                // Detection phase
+                particleX = positions.X2;
+                particleActive = true;
+                currentPhase = 'detected';
+                document.getElementById('phase-t2').classList.add('active');
+                
+                // Draw T₂ laser flash at detection
+                if (elapsed < T2 + 0.5) {
+                    ctx.fillStyle = 'rgba(245, 101, 101, 0.3)';
+                    ctx.beginPath();
+                    ctx.arc(positions.X2, 400, 30, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            // Draw particle
+            drawParticle(particleX, 400, particleActive);
+            
+            // Draw motion trail
+            if (particleActive && particleX > X0) {
+                ctx.strokeStyle = 'rgba(118, 75, 162, 0.3)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 3]);
+                ctx.beginPath();
+                ctx.moveTo(X0, 400);
+                ctx.lineTo(particleX - 15, 400);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            
+            // Update position displays
+            document.getElementById('x0Value').textContent = '0 m';
+            document.getElementById('x1Value').textContent = (0.5 * G * T1 * T1).toFixed(1) + ' m';
+            const V1 = G * T1;
+            document.getElementById('x2Value').textContent = (0.5 * G * T1 * T1 + V1 * (T2 - T1)).toFixed(1) + ' m';
+            
+            // Continue animation
+            if (elapsed < T2 + 1) {
+                animationId = requestAnimationFrame(animate);
+            } else {
+                // Reset after completion
+                setTimeout(() => {
+                    drawStaticElements();
+                    drawParticle(X0, 400, false);
+                }, 1000);
+            }
+        }
+        
+        function startAnimation() {
+            // Cancel any existing animation
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            
+            // Reset
+            startTime = null;
+            currentPhase = 'idle';
+            
+            // Get current parameters
+            G = parseFloat(document.getElementById('acceleration').value);
+            T1 = parseFloat(document.getElementById('t1Time').value);
+            T2 = parseFloat(document.getElementById('t2Time').value);
+            
+            // Start animation
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        // Update display values
+        document.getElementById('acceleration').addEventListener('input', (e) => {
+            document.getElementById('accelerationValue').textContent = parseFloat(e.target.value).toFixed(1) + ' m/s²';
+            G = parseFloat(e.target.value);
+            drawStaticElements();
+            drawParticle(X0, 400, false);
+        });
+        
+        document.getElementById('t1Time').addEventListener('input', (e) => {
+            document.getElementById('t1Value').textContent = parseFloat(e.target.value).toFixed(1) + ' s';
+            T1 = parseFloat(e.target.value);
+            // Ensure T2 > T1
+            const t2Slider = document.getElementById('t2Time');
+            if (parseFloat(t2Slider.value) <= T1) {
+                t2Slider.value = T1 + 1;
+                document.getElementById('t2Value').textContent = (T1 + 1).toFixed(1) + ' s';
+                T2 = T1 + 1;
+            }
+            drawStaticElements();
+            drawParticle(X0, 400, false);
+        });
+        
+        document.getElementById('t2Time').addEventListener('input', (e) => {
+            const newT2 = parseFloat(e.target.value);
+            if (newT2 > T1) {
+                document.getElementById('t2Value').textContent = newT2.toFixed(1) + ' s';
+                T2 = newT2;
+                drawStaticElements();
+                drawParticle(X0, 400, false);
+            } else {
+                e.target.value = T1 + 1;
+                document.getElementById('t2Value').textContent = (T1 + 1).toFixed(1) + ' s';
+                T2 = T1 + 1;
+            }
+        });
+        
+        // Initial draw
+        drawStaticElements();
+        drawParticle(X0, 400, false);
+    </script>
+</body>
+</html>
