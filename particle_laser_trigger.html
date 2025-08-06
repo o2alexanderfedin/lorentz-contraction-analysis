@@ -289,10 +289,11 @@
             ctx.stroke();
             ctx.fillText('X₀', X0, 425);
             
-            // Calculate X₁ and X₂
-            const X1 = X0 + 0.5 * G * T1 * T1 * 50; // scaled for visualization
+            // Calculate X₁ and X₂ with proper scaling to fit canvas
+            const scale = 30; // Reduced scale to ensure all points fit
+            const X1 = X0 + 0.5 * G * T1 * T1 * scale;
             const V1 = G * T1;
-            const X2 = X1 + V1 * (T2 - T1) * 50; // scaled for visualization
+            const X2 = Math.min(X1 + V1 * (T2 - T1) * scale, 850); // Cap at 850 to stay within canvas
             
             // X₁ marker
             ctx.beginPath();
@@ -391,7 +392,7 @@
             
             if (elapsed < T1) {
                 // Acceleration phase
-                particleX = X0 + 0.5 * G * elapsed * elapsed * 50; // scaled
+                particleX = X0 + 0.5 * G * elapsed * elapsed * 30; // scaled to match new scale
                 particleActive = true;
                 currentPhase = 'accelerating';
                 document.getElementById('phase-t0').classList.add('active');
@@ -406,7 +407,7 @@
             } else if (elapsed < T2) {
                 // Uniform motion phase
                 const V1 = G * T1;
-                particleX = positions.X1 + V1 * (elapsed - T1) * 50; // scaled
+                particleX = positions.X1 + V1 * (elapsed - T1) * 30; // scaled to match new scale
                 particleActive = true;
                 currentPhase = 'uniform';
                 document.getElementById('phase-t1').classList.add('active');
