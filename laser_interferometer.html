@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laser Interferometer - Length Measurement Device</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: white;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 1200px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            color: #333;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2a5298;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .canvas-container {
+            position: relative;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            background: #fafafa;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        
+        .control-group .value {
+            text-align: center;
+            font-size: 1.2em;
+            color: #2a5298;
+            font-weight: bold;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+            width: 100%;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(42, 82, 152, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .info-panel {
+            background: linear-gradient(135deg, #e6f2ff 0%, #f0e6ff 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #2a5298;
+        }
+        
+        .info-panel h3 {
+            color: #2a5298;
+            margin-bottom: 10px;
+        }
+        
+        .info-panel p {
+            line-height: 1.6;
+            color: #4a5568;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 3px;
+            border: 1px solid #333;
+        }
+        
+        .measurement-display {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .measurement-box {
+            background: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            text-align: center;
+        }
+        
+        .measurement-box h4 {
+            color: #2a5298;
+            margin-bottom: 10px;
+        }
+        
+        .measurement-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #48bb78;
+        }
+        
+        .measurement-label {
+            color: #718096;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔬 Laser Interferometer Length Measurement</h1>
+        <p class="subtitle">Perpendicular Beam Detection System</p>
+        
+        <div class="canvas-container">
+            <canvas id="interferometer" width="1000" height="600"></canvas>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ff0000;"></div>
+                    <span>Laser Beam</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4299e1;"></div>
+                    <span>Moving Object</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #9f7aea;"></div>
+                    <span>Mirrors</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="objectLength">Object Rest Length (L₀)</label>
+                <input type="range" id="objectLength" min="100" max="400" value="250">
+                <div class="value" id="lengthValue">250 units</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="objectVelocity">Object Velocity (v/c)</label>
+                <input type="range" id="objectVelocity" min="0" max="95" value="0">
+                <div class="value" id="velocityValue">0%</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="mirrorDistance">Mirror Distance</label>
+                <input type="range" id="mirrorDistance" min="100" max="300" value="200">
+                <div class="value" id="mirrorValue">200 units</div>
+            </div>
+            
+            <div class="control-group">
+                <button onclick="measureLength()">📏 Measure Length</button>
+            </div>
+        </div>
+        
+        <div class="measurement-display">
+            <div class="measurement-box">
+                <h4>Measured Length</h4>
+                <div class="measurement-value" id="measuredLength">—</div>
+                <div class="measurement-label">Detection Points Distance</div>
+            </div>
+            <div class="measurement-box">
+                <h4>Lorentz Factor</h4>
+                <div class="measurement-value" id="lorentzFactor">1.000</div>
+                <div class="measurement-label">γ = 1/√(1 - v²/c²)</div>
+            </div>
+        </div>
+        
+        <div class="info-panel">
+            <h3>📐 How This Device Works</h3>
+            <p>
+                This laser interferometer demonstrates a perpendicular beam detection system for measuring a moving object:
+            </p>
+            <ul style="margin-left: 20px; margin-top: 10px; line-height: 1.8;">
+                <li><strong>Laser Source:</strong> A single laser in the observer's rest frame</li>
+                <li><strong>Beam Splitter:</strong> Divides the laser into two identical beams</li>
+                <li><strong>Mirrors:</strong> Positioned to reflect beams perpendicular (90°) to the object's motion</li>
+                <li><strong>Detection:</strong> Beams detect the object's endpoints when they intersect</li>
+                <li><strong>Simultaneity:</strong> Both beams travel equal optical paths from the splitter</li>
+            </ul>
+            <p style="margin-top: 15px;">
+                <strong>Key Point:</strong> Since both beams travel equal distances from the beam splitter to the detection line, and light travels at constant speed c, the detection events are simultaneous in the observer's frame. This provides a rigorous operational definition of "simultaneous position measurement" for the moving object's endpoints.
+            </p>
+            <p style="margin-top: 10px; font-style: italic;">
+                Note: According to special relativity, the measured length should be L = L₀/γ where γ is the Lorentz factor.
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('interferometer');
+        const ctx = canvas.getContext('2d');
+        
+        let animationId = null;
+        let beamPositions = [];
+        let detectionPoints = [];
+        let measurementInProgress = false;
+        
+        function drawStaticSetup() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const mirrorDistance = parseInt(document.getElementById('mirrorDistance').value);
+            
+            // Draw coordinate system
+            ctx.strokeStyle = '#cbd5e0';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            
+            // X-axis (direction of motion)
+            ctx.beginPath();
+            ctx.moveTo(50, centerY);
+            ctx.lineTo(canvas.width - 50, centerY);
+            ctx.stroke();
+            
+            // Y-axis
+            ctx.beginPath();
+            ctx.moveTo(centerX, 50);
+            ctx.lineTo(centerX, canvas.height - 50);
+            ctx.stroke();
+            
+            ctx.setLineDash([]);
+            
+            // Draw laser source
+            ctx.fillStyle = '#e53e3e';
+            ctx.fillRect(centerX - 20, canvas.height - 100, 40, 60);
+            ctx.fillStyle = '#742a2a';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('LASER', centerX, canvas.height - 55);
+            
+            // Draw beam splitter
+            const splitterY = canvas.height - 150;
+            ctx.save();
+            ctx.translate(centerX, splitterY);
+            ctx.rotate(Math.PI / 4);
+            ctx.fillStyle = '#4a5568';
+            ctx.fillRect(-30, -3, 60, 6);
+            ctx.restore();
+            
+            ctx.fillStyle = '#2d3748';
+            ctx.font = '12px Arial';
+            ctx.fillText('Beam Splitter', centerX, splitterY - 25);
+            
+            // Draw mirrors
+            const mirrorSize = 40;
+            const mirror1X = centerX - mirrorDistance;
+            const mirror2X = centerX + mirrorDistance;
+            const mirrorY = splitterY;
+            
+            // Mirror 1 (left)
+            ctx.fillStyle = '#9f7aea';
+            ctx.fillRect(mirror1X - mirrorSize/2, mirrorY - 3, mirrorSize, 6);
+            ctx.fillStyle = '#553c9a';
+            ctx.font = '12px Arial';
+            ctx.fillText('Mirror 1', mirror1X, mirrorY + 25);
+            
+            // Mirror 2 (right)
+            ctx.fillStyle = '#9f7aea';
+            ctx.fillRect(mirror2X - mirrorSize/2, mirrorY - 3, mirrorSize, 6);
+            ctx.fillText('Mirror 2', mirror2X, mirrorY + 25);
+            
+            // Draw beam paths (static)
+            ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
+            ctx.lineWidth = 2;
+            
+            // Beam from laser to splitter
+            ctx.beginPath();
+            ctx.moveTo(centerX, canvas.height - 100);
+            ctx.lineTo(centerX, splitterY);
+            ctx.stroke();
+            
+            // Split beams to mirrors
+            ctx.beginPath();
+            ctx.moveTo(centerX, splitterY);
+            ctx.lineTo(mirror1X, mirrorY);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(centerX, splitterY);
+            ctx.lineTo(mirror2X, mirrorY);
+            ctx.stroke();
+            
+            // Reflected beams (perpendicular, going up)
+            ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+            ctx.setLineDash([10, 5]);
+            ctx.beginPath();
+            ctx.moveTo(mirror1X, mirrorY);
+            ctx.lineTo(mirror1X, 50);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(mirror2X, mirrorY);
+            ctx.lineTo(mirror2X, 50);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Add labels for beam angles
+            ctx.fillStyle = '#718096';
+            ctx.font = '14px Arial';
+            ctx.save();
+            ctx.translate(mirror1X - 30, mirrorY - 50);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('90°', 0, 0);
+            ctx.restore();
+            
+            ctx.save();
+            ctx.translate(mirror2X + 30, mirrorY - 50);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('90°', 0, 0);
+            ctx.restore();
+            
+            return { mirror1X, mirror2X, mirrorY, centerX, centerY };
+        }
+        
+        function drawMovingObject(positions) {
+            const objectLength = parseInt(document.getElementById('objectLength').value);
+            const velocity = parseInt(document.getElementById('objectVelocity').value) / 100;
+            const centerY = canvas.height / 2;
+            
+            // Calculate Lorentz contraction
+            const gamma = 1 / Math.sqrt(1 - velocity * velocity);
+            const contractedLength = objectLength / gamma;
+            
+            // Draw moving object
+            const objectX = positions.centerX - contractedLength / 2;
+            
+            ctx.fillStyle = 'rgba(66, 153, 225, 0.8)';
+            ctx.fillRect(objectX, centerY - 20, contractedLength, 40);
+            
+            ctx.strokeStyle = '#2c5282';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(objectX, centerY - 20, contractedLength, 40);
+            
+            // Draw endpoints
+            ctx.fillStyle = '#2c5282';
+            ctx.beginPath();
+            ctx.arc(objectX, centerY, 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(objectX + contractedLength, centerY, 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw velocity arrow if moving
+            if (velocity > 0) {
+                ctx.strokeStyle = '#e53e3e';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(objectX + contractedLength + 20, centerY);
+                ctx.lineTo(objectX + contractedLength + 60, centerY);
+                ctx.stroke();
+                
+                // Arrowhead
+                ctx.beginPath();
+                ctx.moveTo(objectX + contractedLength + 60, centerY);
+                ctx.lineTo(objectX + contractedLength + 50, centerY - 8);
+                ctx.lineTo(objectX + contractedLength + 50, centerY + 8);
+                ctx.closePath();
+                ctx.fillStyle = '#e53e3e';
+                ctx.fill();
+                
+                ctx.fillStyle = '#2d3748';
+                ctx.font = '14px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText(`v = ${(velocity * 100).toFixed(0)}% c`, objectX + contractedLength + 70, centerY + 5);
+            }
+            
+            return { objectX, contractedLength };
+        }
+        
+        function animateBeams(positions, objectData) {
+            if (!measurementInProgress) return;
+            
+            const time = Date.now() / 1000;
+            const beamSpeed = 100; // pixels per second
+            
+            // Clear beam areas
+            ctx.save();
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.fillRect(positions.mirror1X - 20, 50, 40, positions.mirrorY - 70);
+            ctx.fillRect(positions.mirror2X - 20, 50, 40, positions.mirrorY - 70);
+            ctx.restore();
+            
+            // Animate perpendicular beams
+            const beamProgress = (time * beamSpeed) % (positions.mirrorY - 50);
+            
+            ctx.strokeStyle = '#ff0000';
+            ctx.lineWidth = 3;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#ff0000';
+            
+            // Left beam
+            ctx.beginPath();
+            ctx.moveTo(positions.mirror1X, positions.mirrorY);
+            ctx.lineTo(positions.mirror1X, positions.mirrorY - beamProgress);
+            ctx.stroke();
+            
+            // Right beam
+            ctx.beginPath();
+            ctx.moveTo(positions.mirror2X, positions.mirrorY);
+            ctx.lineTo(positions.mirror2X, positions.mirrorY - beamProgress);
+            ctx.stroke();
+            
+            ctx.shadowBlur = 0;
+            
+            // Check for detection
+            const beamY = positions.mirrorY - beamProgress;
+            if (Math.abs(beamY - positions.centerY) < 5) {
+                // Detection event!
+                detectionPoints = [
+                    { x: positions.mirror1X, y: positions.centerY },
+                    { x: positions.mirror2X, y: positions.centerY }
+                ];
+                
+                // Draw detection flashes
+                ctx.fillStyle = 'rgba(255, 255, 0, 0.8)';
+                detectionPoints.forEach(point => {
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, 15, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                
+                // Calculate and display measurement
+                const measuredDistance = Math.abs(positions.mirror2X - positions.mirror1X);
+                document.getElementById('measuredLength').textContent = measuredDistance.toFixed(0) + ' units';
+                
+                measurementInProgress = false;
+            }
+            
+            if (measurementInProgress) {
+                animationId = requestAnimationFrame(() => animateBeams(positions, objectData));
+            }
+        }
+        
+        function draw() {
+            const positions = drawStaticSetup();
+            const objectData = drawMovingObject(positions);
+            
+            // Update Lorentz factor display
+            const velocity = parseInt(document.getElementById('objectVelocity').value) / 100;
+            const gamma = 1 / Math.sqrt(1 - velocity * velocity);
+            document.getElementById('lorentzFactor').textContent = gamma.toFixed(3);
+        }
+        
+        function measureLength() {
+            measurementInProgress = true;
+            detectionPoints = [];
+            document.getElementById('measuredLength').textContent = '—';
+            
+            const positions = drawStaticSetup();
+            const objectData = drawMovingObject(positions);
+            animateBeams(positions, objectData);
+        }
+        
+        // Update display values
+        document.getElementById('objectLength').addEventListener('input', (e) => {
+            document.getElementById('lengthValue').textContent = e.target.value + ' units';
+            draw();
+        });
+        
+        document.getElementById('objectVelocity').addEventListener('input', (e) => {
+            document.getElementById('velocityValue').textContent = e.target.value + '%';
+            draw();
+        });
+        
+        document.getElementById('mirrorDistance').addEventListener('input', (e) => {
+            document.getElementById('mirrorValue').textContent = e.target.value + ' units';
+            draw();
+        });
+        
+        // Initial draw
+        draw();
+    </script>
+</body>
+</html>

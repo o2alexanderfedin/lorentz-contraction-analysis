@@ -1,0 +1,113 @@
+
+\documentclass[11pt]{article}
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{physics}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Alexander Fedin}
+\lhead{Lorentz Contraction Revisited}
+\rfoot{\thepage}
+
+\title{\textbf{Lorentz Contraction Without Misconceptions:\\A Consistent Kinematic Analysis}}
+\author{Alexander Fedin\\\href{https://orcid.org/0009-0000-7127-6635}{ORCID: 0009-0000-7127-6635}}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We revisit the standard thought experiment leading to the Lorentz contraction and demonstrate that, when initial conditions and measurement procedures are rigorously defined within a single inertial frame, no contraction is observed. The so-called Lorentz contraction emerges only when coordinates are transformed between frames using relativity of simultaneity. This analysis shows that the commonly presented contraction effect is a coordinate artifact, not a physical deformation.
+\end{abstract}
+
+\section{Introduction}
+
+The Lorentz contraction is a cornerstone of special relativity. It predicts that an object in uniform motion relative to an observer appears shorter along the direction of motion. But this prediction depends critically on how simultaneity and measurements are defined across frames.
+
+Here, we construct a precise thought experiment in which all aspects—initial conditions, acceleration profile, synchronization, and measurement protocol—are defined within a single inertial frame (that of the observer). We find that no contraction occurs. Instead, contraction arises only when comparing events across frames with different simultaneity rules.
+
+\section{Experimental Setup}
+
+We consider two point-like objects, $A_1$ and $A_2$, initially at rest in the observer’s inertial frame. They are separated by distance $D$. At $t = 0$, both undergo identical proper acceleration $G$ for a fixed duration $T$, after which they continue in uniform motion at $v = GT$.
+
+The configuration ensures:
+
+\begin{itemize}
+    \item Known rest length $D$ in the observer’s frame.
+    \item Identical acceleration profiles for both endpoints.
+    \item All timing and positioning measurements are made using synchronized clocks in the observer’s frame.
+\end{itemize}
+
+\section{Results}
+
+During acceleration ($0 \le t \le T$), the positions are:
+
+\begin{align*}
+    x_{A_1}(t) &= x_1 + \frac{1}{2}Gt^2, \\
+    x_{A_2}(t) &= x_1 + D + \frac{1}{2}Gt^2.
+\end{align*}
+
+After $t > T$, the motion becomes uniform:
+
+\begin{align*}
+    x_{A_1}(t) &= x_{A_1}(T) + v(t - T), \\
+    x_{A_2}(t) &= x_{A_2}(T) + v(t - T).
+\end{align*}
+
+At all times:
+\[
+x_{A_2}(t) - x_{A_1}(t) = D.
+\]
+
+\section{Discussion}
+
+This result confirms that no length contraction is observed when all kinematics are modeled and measured within the same inertial frame. The standard Lorentz contraction emerges only when comparing positions and events across frames using the Lorentz transformation—where simultaneity itself is redefined.
+
+Hence, the contraction is a result of transformation geometry, not of physical deformation. Misapplied assumptions about simultaneity produce false expectations—“garbage in, garbage out.”
+
+\section{Conclusion}
+
+The Lorentz contraction does not manifest in a scenario where the rod is defined and analyzed entirely within the observer’s frame with rigorously controlled parameters. The contraction is coordinate-based, and its “reality” depends on frame-relative reinterpretations—not local observation.
+
+\newpage
+\appendix
+\section*{Appendix A: Spacetime Diagram}
+
+\begin{center}
+\begin{tikzpicture}[>=Latex, scale=1.0]
+
+% Axes
+\draw[->] (-1, 0) -- (7, 0) node[below] {$x$};
+\draw[->] (0, -0.5) -- (0, 6) node[left] {$t$};
+
+% Labels
+\node at (1.1, -0.3) {$x_1$};
+\node at (3.1, -0.3) {$x_2 = x_1 + D$};
+
+% Worldlines (accelerated phase)
+\draw[thick, blue, domain=0:2, samples=100] plot (\x*\x/4 + 1, \x) node[right] {$A_1$};
+\draw[thick, red, domain=0:2, samples=100] plot (\x*\x/4 + 3, \x) node[right] {$A_2$};
+
+% Uniform motion
+\draw[thick, blue] (2*2/4 + 1, 2) -- (6, 5);
+\draw[thick, red] (2*2/4 + 3, 2) -- (8, 5);
+
+% Time markers
+\draw[dashed] (0,2) -- (6.5,2) node[anchor=south east] {$t=T$};
+
+% Distance arrow at t = 2
+\draw[<->, thick] (2*2/4 + 1, 2.2) -- (2*2/4 + 3, 2.2) node[midway, above] {$D$};
+
+\end{tikzpicture}
+\end{center}
+
+\textbf{Figure A1.} Spacetime diagram (Minkowski) in the observer’s frame. The worldlines of both endpoints remain consistently separated by distance $D$ throughout the motion. No Lorentz contraction is observed.
+
+\end{document}

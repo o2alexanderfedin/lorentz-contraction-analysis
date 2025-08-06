@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simultaneity Detection Device - Special Relativity</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: white;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 1200px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            color: #333;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #5a67d8;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .canvas-container {
+            position: relative;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            background: white;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        
+        .control-group .value {
+            text-align: center;
+            font-size: 1.2em;
+            color: #5a67d8;
+            font-weight: bold;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+            width: 100%;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .info-panel {
+            background: linear-gradient(135deg, #e0e7ff 0%, #f0e7ff 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #5a67d8;
+        }
+        
+        .info-panel h3 {
+            color: #5a67d8;
+            margin-bottom: 10px;
+        }
+        
+        .info-panel p {
+            line-height: 1.6;
+            color: #4a5568;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #333;
+        }
+        
+        .status {
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        
+        .status.simultaneous {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .status.not-simultaneous {
+            background: #f56565;
+            color: white;
+        }
+        
+        .status.waiting {
+            background: #ed8936;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚛️ Simultaneity Detection Device</h1>
+        <p class="subtitle">Understanding Event Detection in Special Relativity</p>
+        
+        <div class="canvas-container">
+            <canvas id="detector" width="900" height="400"></canvas>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4299e1;"></div>
+                    <span>Light Signal</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #f6e05e;"></div>
+                    <span>Event Flash</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #48bb78;"></div>
+                    <span>Detector Active</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="separation">Detector Separation</label>
+                <input type="range" id="separation" min="100" max="400" value="300">
+                <div class="value" id="separationValue">300 units</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="eventDelay">Event Time Difference</label>
+                <input type="range" id="eventDelay" min="-50" max="50" value="0">
+                <div class="value" id="delayValue">0 ms</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="frameVelocity">Observer Velocity (v/c)</label>
+                <input type="range" id="frameVelocity" min="0" max="90" value="0">
+                <div class="value" id="velocityValue">0%</div>
+            </div>
+            
+            <div class="control-group">
+                <button onclick="triggerEvents()">🚀 Trigger Events</button>
+            </div>
+        </div>
+        
+        <div class="status waiting" id="status">
+            Ready to Detect Events
+        </div>
+        
+        <div class="info-panel">
+            <h3>📊 How the Device Works</h3>
+            <p>
+                This device demonstrates how simultaneity is detected in special relativity:
+            </p>
+            <ul style="margin-left: 20px; margin-top: 10px; line-height: 1.8;">
+                <li><strong>Central Detector:</strong> Located at the midpoint between two sensors</li>
+                <li><strong>Light Signals:</strong> Events create light signals that travel at speed c</li>
+                <li><strong>Simultaneity Test:</strong> Events are simultaneous if their light signals arrive at the central detector at the same time</li>
+                <li><strong>Frame Dependence:</strong> Change the observer velocity to see how simultaneity becomes relative</li>
+            </ul>
+            <p style="margin-top: 15px;">
+                <strong>Key Insight:</strong> Two events that appear simultaneous in one reference frame may not be simultaneous in another frame moving relative to the first. This is the relativity of simultaneity - a fundamental aspect of special relativity that leads to effects like length contraction.
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('detector');
+        const ctx = canvas.getContext('2d');
+        
+        let animationId = null;
+        let events = [];
+        let lightSignals = [];
+        let detectionTime = null;
+        let startTime = null;
+        
+        class Event {
+            constructor(x, y, time) {
+                this.x = x;
+                this.y = y;
+                this.time = time;
+                this.triggered = false;
+            }
+        }
+        
+        class LightSignal {
+            constructor(startX, startY, targetX, targetY, startTime, color = '#4299e1') {
+                this.startX = startX;
+                this.startY = startY;
+                this.targetX = targetX;
+                this.targetY = targetY;
+                this.startTime = startTime;
+                this.currentX = startX;
+                this.currentY = startY;
+                this.color = color;
+                this.speed = 0.3; // Speed of light in our units
+                this.arrived = false;
+            }
+            
+            update(currentTime) {
+                const elapsed = currentTime - this.startTime;
+                const distance = Math.sqrt(
+                    Math.pow(this.targetX - this.startX, 2) + 
+                    Math.pow(this.targetY - this.startY, 2)
+                );
+                const totalTime = distance / this.speed;
+                
+                if (elapsed >= totalTime) {
+                    this.currentX = this.targetX;
+                    this.currentY = this.targetY;
+                    this.arrived = true;
+                } else {
+                    const progress = elapsed / totalTime;
+                    this.currentX = this.startX + (this.targetX - this.startX) * progress;
+                    this.currentY = this.startY + (this.targetY - this.startY) * progress;
+                }
+            }
+        }
+        
+        function drawDevice() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const separation = parseInt(document.getElementById('separation').value);
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            // Draw base line
+            ctx.strokeStyle = '#718096';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(centerX - separation/2 - 50, centerY);
+            ctx.lineTo(centerX + separation/2 + 50, centerY);
+            ctx.stroke();
+            
+            // Draw sensors
+            const sensorRadius = 20;
+            const sensor1X = centerX - separation/2;
+            const sensor2X = centerX + separation/2;
+            
+            // Sensor 1
+            ctx.fillStyle = '#e53e3e';
+            ctx.beginPath();
+            ctx.arc(sensor1X, centerY, sensorRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#742a2a';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Sensor 2
+            ctx.fillStyle = '#e53e3e';
+            ctx.beginPath();
+            ctx.arc(sensor2X, centerY, sensorRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#742a2a';
+            ctx.stroke();
+            
+            // Draw central detector
+            ctx.fillStyle = '#48bb78';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 25, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#22543d';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // Draw labels
+            ctx.fillStyle = '#2d3748';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Sensor A', sensor1X, centerY + 50);
+            ctx.fillText('Sensor B', sensor2X, centerY + 50);
+            ctx.fillText('Central Detector', centerX, centerY + 60);
+            
+            // Draw coordinate info
+            ctx.fillStyle = '#718096';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText(`Distance: ${separation} light-units`, 10, 20);
+            
+            const velocity = parseInt(document.getElementById('frameVelocity').value) / 100;
+            if (velocity > 0) {
+                ctx.fillText(`Observer velocity: ${(velocity * 100).toFixed(0)}% c`, 10, 40);
+                const gamma = 1 / Math.sqrt(1 - velocity * velocity);
+                ctx.fillText(`Lorentz factor γ = ${gamma.toFixed(3)}`, 10, 60);
+            }
+        }
+        
+        function drawEvents(currentTime) {
+            events.forEach(event => {
+                if (currentTime >= event.time && !event.triggered) {
+                    event.triggered = true;
+                    // Create light signals to central detector
+                    const centerX = canvas.width / 2;
+                    const centerY = canvas.height / 2;
+                    lightSignals.push(new LightSignal(
+                        event.x, event.y, centerX, centerY, currentTime
+                    ));
+                }
+                
+                if (event.triggered) {
+                    // Draw event flash
+                    const timeSinceEvent = currentTime - event.time;
+                    const flashDuration = 500;
+                    if (timeSinceEvent < flashDuration) {
+                        const opacity = 1 - (timeSinceEvent / flashDuration);
+                        ctx.fillStyle = `rgba(246, 224, 94, ${opacity})`;
+                        ctx.beginPath();
+                        ctx.arc(event.x, event.y, 30 * (1 + timeSinceEvent / flashDuration), 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+            });
+        }
+        
+        function drawLightSignals(currentTime) {
+            lightSignals.forEach(signal => {
+                signal.update(currentTime);
+                
+                // Draw light signal
+                ctx.fillStyle = signal.color;
+                ctx.globalAlpha = 0.8;
+                ctx.beginPath();
+                ctx.arc(signal.currentX, signal.currentY, 8, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw trail
+                ctx.strokeStyle = signal.color;
+                ctx.globalAlpha = 0.3;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(signal.startX, signal.startY);
+                ctx.lineTo(signal.currentX, signal.currentY);
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+            });
+        }
+        
+        function checkSimultaneity() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const threshold = 10; // Detection threshold in pixels
+            
+            const arrivedSignals = lightSignals.filter(s => 
+                s.arrived && 
+                Math.abs(s.currentX - centerX) < threshold && 
+                Math.abs(s.currentY - centerY) < threshold
+            );
+            
+            if (arrivedSignals.length >= 2 && !detectionTime) {
+                detectionTime = Date.now();
+                const status = document.getElementById('status');
+                
+                // Check if signals arrived within a small time window
+                const arrivalTimes = arrivedSignals.map(s => {
+                    const distance = Math.sqrt(
+                        Math.pow(s.targetX - s.startX, 2) + 
+                        Math.pow(s.targetY - s.startY, 2)
+                    );
+                    return s.startTime + distance / s.speed;
+                });
+                
+                const timeDifference = Math.abs(arrivalTimes[0] - arrivalTimes[1]);
+                
+                if (timeDifference < 50) { // 50ms tolerance
+                    status.className = 'status simultaneous';
+                    status.textContent = '✓ Events Detected as SIMULTANEOUS';
+                } else {
+                    status.className = 'status not-simultaneous';
+                    status.textContent = `✗ Events NOT Simultaneous (Δt = ${timeDifference.toFixed(0)}ms)`;
+                }
+            }
+        }
+        
+        function animate() {
+            const currentTime = Date.now() - startTime;
+            
+            drawDevice();
+            drawEvents(currentTime);
+            drawLightSignals(currentTime);
+            checkSimultaneity();
+            
+            // Stop animation after 10 seconds
+            if (currentTime < 10000) {
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+        
+        function triggerEvents() {
+            // Reset
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            events = [];
+            lightSignals = [];
+            detectionTime = null;
+            startTime = Date.now();
+            
+            const separation = parseInt(document.getElementById('separation').value);
+            const delay = parseInt(document.getElementById('eventDelay').value);
+            const velocity = parseInt(document.getElementById('frameVelocity').value) / 100;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            // Calculate positions with Lorentz transformation if velocity > 0
+            let event1Time = 500;
+            let event2Time = 500 + delay;
+            
+            if (velocity > 0) {
+                // Apply relativity of simultaneity
+                const gamma = 1 / Math.sqrt(1 - velocity * velocity);
+                const spatialSeparation = separation;
+                const timeDifference = -gamma * velocity * spatialSeparation / 3; // c = 0.3 in our units
+                event2Time += timeDifference;
+            }
+            
+            // Create events
+            events.push(new Event(centerX - separation/2, centerY, event1Time));
+            events.push(new Event(centerX + separation/2, centerY, event2Time));
+            
+            // Update status
+            const status = document.getElementById('status');
+            status.className = 'status waiting';
+            status.textContent = 'Detecting Events...';
+            
+            // Start animation
+            animate();
+        }
+        
+        // Update display values
+        document.getElementById('separation').addEventListener('input', (e) => {
+            document.getElementById('separationValue').textContent = e.target.value + ' units';
+            drawDevice();
+        });
+        
+        document.getElementById('eventDelay').addEventListener('input', (e) => {
+            document.getElementById('delayValue').textContent = e.target.value + ' ms';
+        });
+        
+        document.getElementById('frameVelocity').addEventListener('input', (e) => {
+            document.getElementById('velocityValue').textContent = e.target.value + '%';
+            drawDevice();
+        });
+        
+        // Initial draw
+        drawDevice();
+    </script>
+</body>
+</html>
