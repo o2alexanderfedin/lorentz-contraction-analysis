@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lorentz Contraction Analysis - Interactive Visualizations</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        
+        h1 {
+            color: #2d3748;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #718096;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+        
+        .author {
+            color: #4a5568;
+            margin-bottom: 10px;
+        }
+        
+        .author a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .author a:hover {
+            text-decoration: underline;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card h2 {
+            color: #2d3748;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card h2 .icon {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+        
+        .card p {
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .card ul {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+        
+        .card li {
+            color: #718096;
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .card li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .paper-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .paper-section h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+        }
+        
+        .abstract {
+            background: #f7fafc;
+            padding: 20px;
+            border-left: 4px solid #667eea;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .abstract p {
+            color: #4a5568;
+            line-height: 1.8;
+            font-style: italic;
+        }
+        
+        .links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        footer {
+            text-align: center;
+            color: white;
+            padding: 20px;
+        }
+        
+        footer a {
+            color: white;
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚛️ Lorentz Contraction Analysis</h1>
+            <p class="subtitle">Interactive Visualizations & Theoretical Framework</p>
+            <p class="author">
+                By Alexander Fedin | 
+                <a href="https://orcid.org/0009-0000-7127-6635" target="_blank">ORCID: 0009-0000-7127-6635</a>
+            </p>
+        </header>
+        
+        <div class="paper-section">
+            <h2>📄 Research Paper</h2>
+            <div class="abstract">
+                <p>
+                    <strong>Abstract:</strong> We revisit the standard thought experiment leading to the Lorentz contraction and demonstrate that, 
+                    when initial conditions and measurement procedures are rigorously defined within a single inertial frame, 
+                    no contraction is observed. The so-called Lorentz contraction emerges only when coordinates are transformed 
+                    between frames using relativity of simultaneity.
+                </p>
+            </div>
+            <div class="links">
+                <a href="lorentz_contraction_fedin.pdf" class="btn" target="_blank">📖 Read PDF</a>
+                <a href="lorentz_contraction_fedin.tex" class="btn" target="_blank">📝 View LaTeX Source</a>
+                <a href="https://github.com/o2alexanderfedin/lorentz-contraction-analysis" class="btn" target="_blank">💻 GitHub Repository</a>
+            </div>
+        </div>
+        
+        <h2 style="color: white; text-align: center; margin-bottom: 20px;">🎯 Interactive Visualizations</h2>
+        
+        <div class="grid">
+            <div class="card">
+                <h2><span class="icon">🚀</span> Relativistic Motion</h2>
+                <p>
+                    Track point object P₀ through acceleration and uniform motion at relativistic speeds.
+                </p>
+                <ul>
+                    <li>Three key time points (T₀, T₁, T₂)</li>
+                    <li>Default velocity V₁ = c/2</li>
+                    <li>Real-time Lorentz factor γ</li>
+                    <li>Distance from X₀ visualization</li>
+                </ul>
+                <a href="relativistic_particle_motion.html" class="btn">Launch Simulation</a>
+            </div>
+            
+            <div class="card">
+                <h2><span class="icon">🔬</span> Laser Interferometer</h2>
+                <p>
+                    Perpendicular beam detection system for measuring moving objects.
+                </p>
+                <ul>
+                    <li>Beam splitter configuration</li>
+                    <li>90° detection angles</li>
+                    <li>Simultaneous endpoint detection</li>
+                    <li>Animated measurement process</li>
+                </ul>
+                <a href="laser_interferometer.html" class="btn">Launch Device</a>
+            </div>
+            
+            <div class="card">
+                <h2><span class="icon">⏱️</span> Simultaneity Detector</h2>
+                <p>
+                    Demonstrates the relativity of simultaneity in different reference frames.
+                </p>
+                <ul>
+                    <li>Einstein's train experiment</li>
+                    <li>Light signal propagation</li>
+                    <li>Frame-dependent simultaneity</li>
+                    <li>Adjustable observer velocity</li>
+                </ul>
+                <a href="simultaneity_detector.html" class="btn">Launch Detector</a>
+            </div>
+            
+            <div class="card">
+                <h2><span class="icon">📐</span> Classical Motion</h2>
+                <p>
+                    Non-relativistic particle motion for comparison with relativistic case.
+                </p>
+                <ul>
+                    <li>Position vs time graphs</li>
+                    <li>Velocity vs time graphs</li>
+                    <li>Clear phase transitions</li>
+                    <li>Educational baseline</li>
+                </ul>
+                <a href="point_particle_motion.html" class="btn">Launch Animation</a>
+            </div>
+        </div>
+        
+        <div class="paper-section">
+            <h2>🔑 Key Physics</h2>
+            <p style="margin-bottom: 20px; line-height: 1.8;">
+                The analysis focuses on a point object P₀ that undergoes three distinct phases:
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                <div style="background: #f7fafc; padding: 15px; border-radius: 10px;">
+                    <h3 style="color: #48bb78; margin-bottom: 10px;">Phase 1: Acceleration</h3>
+                    <p style="font-family: monospace; color: #2d3748;">
+                        T₀ → T₁<br>
+                        x(t) = X₀ + ½G(t-T₀)²<br>
+                        v(t) = G(t-T₀)
+                    </p>
+                </div>
+                <div style="background: #f7fafc; padding: 15px; border-radius: 10px;">
+                    <h3 style="color: #f6ad55; margin-bottom: 10px;">Phase 2: Uniform Motion</h3>
+                    <p style="font-family: monospace; color: #2d3748;">
+                        T₁ → T₂<br>
+                        x(t) = X₁ + V₁(t-T₁)<br>
+                        V₁ = G(T₁-T₀) = c/2
+                    </p>
+                </div>
+                <div style="background: #f7fafc; padding: 15px; border-radius: 10px;">
+                    <h3 style="color: #9f7aea; margin-bottom: 10px;">At V₁ = c/2</h3>
+                    <p style="font-family: monospace; color: #2d3748;">
+                        γ = 1.155<br>
+                        Time dilation: 15.5%<br>
+                        Length contraction: 13.4%
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>
+                © 2024 Alexander Fedin | 
+                <a href="https://github.com/o2alexanderfedin/lorentz-contraction-analysis">View on GitHub</a>
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
