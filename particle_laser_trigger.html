@@ -253,6 +253,161 @@
         const canvas = document.getElementById('motionCanvas');
         const ctx = canvas.getContext('2d');
         
+        // Particle class for reusable particle objects
+        class Particle {
+            constructor(name, x0, color = '#764ba2') {
+                this.name = name;
+                this.x0 = x0;
+                this.x = x0;
+                this.y = 400;
+                this.color = color;
+                this.isActive = false;
+                this.velocity = 0;
+            }
+            
+            updatePosition(x) {
+                this.x = x;
+            }
+            
+            draw(ctx) {
+                // Draw particle
+                ctx.fillStyle = this.isActive ? this.color : '#cbd5e0';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 15, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.strokeStyle = this.isActive ? '#553c9a' : '#a0aec0';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Label
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(this.name, this.x, this.y + 5);
+                
+                // Motion arrow if moving
+                if (this.isActive && this.x > this.x0 + 10) {
+                    ctx.strokeStyle = '#48bb78';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(this.x + 20, this.y);
+                    ctx.lineTo(this.x + 60, this.y);
+                    ctx.stroke();
+                    
+                    // Arrowhead
+                    ctx.beginPath();
+                    ctx.moveTo(this.x + 60, this.y);
+                    ctx.lineTo(this.x + 50, this.y - 8);
+                    ctx.lineTo(this.x + 50, this.y + 8);
+                    ctx.closePath();
+                    ctx.fillStyle = '#48bb78';
+                    ctx.fill();
+                }
+            }
+        }
+        
+        // LaserDetector class for reusable laser detectors
+        class LaserDetector {
+            constructor(x, label, color, detectionRange = 20) {
+                this.x = x;
+                this.y = 100;
+                this.label = label;
+                this.color = color;
+                this.detectionRange = detectionRange;
+                this.isDetecting = false;
+            }
+            
+            checkDetection(particleX) {
+                this.isDetecting = Math.abs(particleX - this.x) < this.detectionRange;
+                return this.isDetecting;
+            }
+            
+            draw(ctx) {
+                // Laser emitter with blinking effect
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.isDetecting ? 1 : 0.4;
+                ctx.fillRect(this.x - 15, this.y - 30, 30, 25);
+                
+                // Laser beam (vertical) with blinking
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = 3;
+                ctx.setLineDash([10, 5]);
+                ctx.globalAlpha = this.isDetecting ? 0.8 : 0.2;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x, 400);
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+                ctx.setLineDash([]);
+                
+                // Add glow effect when detecting
+                if (this.isDetecting) {
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = this.color;
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = 0.3;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y - 15, 25, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = 1;
+                }
+                
+                // Label
+                ctx.fillStyle = '#2d3748';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(this.label, this.x, this.y - 40);
+            }
+        }
+        
+        // ParticleSystem class to manage particle and lasers together
+        class ParticleSystem {
+            constructor(particle, lasers = []) {
+                this.particle = particle;
+                this.lasers = lasers;
+                this.scale = 30;
+            }
+            
+            updatePhysics(elapsed, G, T1, T2) {
+                let x;
+                
+                if (elapsed < T1) {
+                    // Acceleration phase
+                    x = this.particle.x0 + 0.5 * G * elapsed * elapsed * this.scale;
+                    this.particle.isActive = true;
+                } else if (elapsed < T2) {
+                    // Uniform motion phase
+                    const V1 = G * T1;
+                    const X1 = this.particle.x0 + 0.5 * G * T1 * T1 * this.scale;
+                    x = X1 + V1 * (elapsed - T1) * this.scale;
+                    this.particle.isActive = true;
+                } else {
+                    // Detection phase
+                    const V1 = G * T1;
+                    const X1 = this.particle.x0 + 0.5 * G * T1 * T1 * this.scale;
+                    x = Math.min(X1 + V1 * (T2 - T1) * this.scale, 850);
+                    this.particle.isActive = true;
+                }
+                
+                this.particle.updatePosition(x);
+                
+                // Update laser detection states
+                this.lasers.forEach(laser => {
+                    laser.checkDetection(this.particle.x);
+                });
+            }
+            
+            draw(ctx) {
+                // Draw all lasers
+                this.lasers.forEach(laser => laser.draw(ctx));
+                
+                // Draw particle
+                this.particle.draw(ctx);
+            }
+        }
+        
         let animationId = null;
         let startTime = null;
         let currentPhase = 'idle';
@@ -262,7 +417,30 @@
         let T1 = 2; // time when acceleration stops
         let T2 = 5; // time of detection
         let X0 = 100; // initial position
-        let currentParticleX = X0; // Track current particle position
+        
+        // Initialize particle and laser system
+        const particle = new Particle('P₀', X0);
+        const scale = 30;
+        
+        // Calculate laser positions
+        function calculatePositions() {
+            const X1 = X0 + 0.5 * G * T1 * T1 * scale;
+            const V1 = G * T1;
+            const X2 = Math.min(X1 + V1 * (T2 - T1) * scale, 850);
+            return { X1, X2, V1 };
+        }
+        
+        let positions = calculatePositions();
+        
+        // Create laser detectors
+        const lasers = [
+            new LaserDetector(X0, 'Laser T₀', '#48bb78'),
+            new LaserDetector(positions.X1, 'Laser T₁', '#f6ad55'),
+            new LaserDetector(positions.X2, 'Laser T₂', '#f56565')
+        ];
+        
+        // Create particle system
+        const particleSystem = new ParticleSystem(particle, lasers);
         
         function drawStaticElements() {
             // Clear canvas
@@ -283,6 +461,13 @@
             ctx.font = '12px Arial';
             ctx.textAlign = 'center';
             
+            // Update positions
+            positions = calculatePositions();
+            
+            // Update laser positions
+            lasers[1].x = positions.X1;
+            lasers[2].x = positions.X2;
+            
             // X₀ marker
             ctx.beginPath();
             ctx.moveTo(X0, 395);
@@ -290,114 +475,24 @@
             ctx.stroke();
             ctx.fillText('X₀', X0, 425);
             
-            // Calculate X₁ and X₂ with proper scaling to fit canvas
-            const scale = 30; // Reduced scale to ensure all points fit
-            const X1 = X0 + 0.5 * G * T1 * T1 * scale;
-            const V1 = G * T1;
-            const X2 = Math.min(X1 + V1 * (T2 - T1) * scale, 850); // Cap at 850 to stay within canvas
-            
             // X₁ marker
             ctx.beginPath();
-            ctx.moveTo(X1, 395);
-            ctx.lineTo(X1, 405);
+            ctx.moveTo(positions.X1, 395);
+            ctx.lineTo(positions.X1, 405);
             ctx.stroke();
-            ctx.fillText('X₁', X1, 425);
+            ctx.fillText('X₁', positions.X1, 425);
             
             // X₂ marker
             ctx.beginPath();
-            ctx.moveTo(X2, 395);
-            ctx.lineTo(X2, 405);
+            ctx.moveTo(positions.X2, 395);
+            ctx.lineTo(positions.X2, 405);
             ctx.stroke();
-            ctx.fillText('X₂', X2, 425);
+            ctx.fillText('X₂', positions.X2, 425);
             
-            // Check if particle is near each laser position (within detection range)
-            const detectionRange = 20;
-            const blinkX0 = Math.abs(currentParticleX - X0) < detectionRange;
-            const blinkX1 = Math.abs(currentParticleX - X1) < detectionRange;
-            const blinkX2 = Math.abs(currentParticleX - X2) < detectionRange;
-            
-            // Draw laser detectors at all three positions with selective blinking
-            drawLaser(X0, 100, 'Laser T₀', '#48bb78', blinkX0);
-            drawLaser(X1, 100, 'Laser T₁', '#f6ad55', blinkX1);
-            drawLaser(X2, 100, 'Laser T₂', '#f56565', blinkX2);
-            
-            return { X1, X2, V1 };
+            return positions;
         }
         
-        function drawLaser(x, y, label, color, blinking) {
-            // Laser emitter with blinking effect
-            ctx.fillStyle = color;
-            ctx.globalAlpha = blinking ? 1 : 0.4;
-            ctx.fillRect(x - 15, y - 30, 30, 25);
-            
-            // Laser beam (vertical) with blinking
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 3;
-            ctx.setLineDash([10, 5]);
-            ctx.globalAlpha = blinking ? 0.8 : 0.2;
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x, 400);
-            ctx.stroke();
-            ctx.globalAlpha = 1;
-            ctx.setLineDash([]);
-            
-            // Add glow effect when blinking
-            if (blinking) {
-                ctx.shadowBlur = 20;
-                ctx.shadowColor = color;
-                ctx.fillStyle = color;
-                ctx.globalAlpha = 0.3;
-                ctx.beginPath();
-                ctx.arc(x, y - 15, 25, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.shadowBlur = 0;
-                ctx.globalAlpha = 1;
-            }
-            
-            // Label
-            ctx.fillStyle = '#2d3748';
-            ctx.font = 'bold 12px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText(label, x, y - 40);
-        }
-        
-        function drawParticle(x, y, isActive) {
-            // Draw P₀
-            ctx.fillStyle = isActive ? '#764ba2' : '#cbd5e0';
-            ctx.beginPath();
-            ctx.arc(x, y, 15, 0, Math.PI * 2);
-            ctx.fill();
-            
-            ctx.strokeStyle = isActive ? '#553c9a' : '#a0aec0';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            
-            // Label
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 14px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('P₀', x, y + 5);
-            
-            // Motion arrow if moving
-            if (isActive && x > X0 + 10) {
-                ctx.strokeStyle = '#48bb78';
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.moveTo(x + 20, y);
-                ctx.lineTo(x + 60, y);
-                ctx.stroke();
-                
-                // Arrowhead
-                ctx.beginPath();
-                ctx.moveTo(x + 60, y);
-                ctx.lineTo(x + 50, y - 8);
-                ctx.lineTo(x + 50, y + 8);
-                ctx.closePath();
-                ctx.fillStyle = '#48bb78';
-                ctx.fill();
-            }
-        }
+        // Note: drawLaser and drawParticle functions are now replaced by class methods
         
         function animate(timestamp) {
             if (!startTime) startTime = timestamp;
@@ -411,32 +506,23 @@
             // Update phase indicators
             document.querySelectorAll('.phase-box').forEach(box => box.classList.remove('active'));
             
+            // Update particle system physics
+            particleSystem.updatePhysics(elapsed, G, T1, T2);
+            
+            // Update phase based on elapsed time
             if (elapsed < T1) {
-                // Acceleration phase
-                particleX = X0 + 0.5 * G * elapsed * elapsed * 30; // scaled to match new scale
-                particleActive = true;
                 currentPhase = 'accelerating';
                 document.getElementById('phase-t0').classList.add('active');
             } else if (elapsed < T2) {
-                // Uniform motion phase
-                const V1 = G * T1;
-                particleX = positions.X1 + V1 * (elapsed - T1) * 30; // scaled to match new scale
-                particleActive = true;
                 currentPhase = 'uniform';
                 document.getElementById('phase-t1').classList.add('active');
             } else {
-                // Detection phase
-                particleX = positions.X2;
-                particleActive = true;
                 currentPhase = 'detected';
                 document.getElementById('phase-t2').classList.add('active');
             }
             
-            // Update global particle position for laser detection
-            currentParticleX = particleX;
-            
-            // Draw particle
-            drawParticle(particleX, 400, particleActive);
+            // Draw particle system (particle and lasers)
+            particleSystem.draw(ctx);
             
             // Draw motion trail
             if (particleActive && particleX > X0) {
@@ -462,8 +548,10 @@
             } else {
                 // Reset after completion
                 setTimeout(() => {
+                    particle.x = X0;
+                    particle.isActive = false;
                     drawStaticElements();
-                    drawParticle(X0, 400, false);
+                    particleSystem.draw(ctx);
                 }, 1000);
             }
         }
@@ -525,7 +613,7 @@
         
         // Initial draw
         drawStaticElements();
-        drawParticle(X0, 400, false);
+        particleSystem.draw(ctx);
     </script>
 </body>
 </html>
