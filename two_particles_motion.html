@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Particles Motion - P₀ and P₁ with Separation D</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: white;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 1500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            color: #333;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2a5298;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .canvas-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .graph-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .graph-title {
+            text-align: center;
+            font-weight: bold;
+            color: #4a5568;
+            margin-bottom: 10px;
+        }
+        
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            background: white;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        
+        .control-group .value {
+            text-align: center;
+            font-size: 1.2em;
+            color: #2a5298;
+            font-weight: bold;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+            width: 100%;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(42, 82, 152, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .info-panel {
+            background: linear-gradient(135deg, #e6f2ff 0%, #f0e6ff 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #2a5298;
+        }
+        
+        .info-panel h3 {
+            color: #2a5298;
+            margin-bottom: 10px;
+        }
+        
+        .equations {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .equation-box {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .equation-label {
+            font-size: 0.9em;
+            color: #718096;
+            margin-bottom: 5px;
+        }
+        
+        .equation {
+            font-size: 1.1em;
+            color: #2d3748;
+            font-weight: bold;
+        }
+        
+        .status-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 10px;
+        }
+        
+        .status-item {
+            text-align: center;
+        }
+        
+        .status-label {
+            font-size: 0.9em;
+            color: #718096;
+        }
+        
+        .status-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2a5298;
+        }
+        
+        .warning {
+            background: #fed7d7;
+            color: #742a2a;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .speed-indicator {
+            position: relative;
+            height: 30px;
+            background: #e2e8f0;
+            border-radius: 15px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .speed-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78 0%, #f6e05e 50%, #f56565 100%);
+            border-radius: 15px;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .relativistic-marker {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background: #e53e3e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚛️ Two Particles P₀ and P₁ Motion Analysis</h1>
+        <p class="subtitle">Tracking Two Objects with Separation D Through Identical Acceleration</p>
+        
+        <div class="canvas-container">
+            <div class="graph-box">
+                <div class="graph-title">Position vs Time (Classical Approximation)</div>
+                <canvas id="positionGraph" width="600" height="400"></canvas>
+            </div>
+            <div class="graph-box">
+                <div class="graph-title">Velocity vs Time (v/c)</div>
+                <canvas id="velocityGraph" width="600" height="400"></canvas>
+            </div>
+        </div>
+        
+        <div class="canvas-container" style="margin-top: 20px;">
+            <div class="graph-box" style="grid-column: span 2;">
+                <div class="graph-title">Separation Between P₁ and P₀ vs Time</div>
+                <canvas id="distanceGraph" width="1250" height="400"></canvas>
+            </div>
+        </div>
+        
+        <div class="speed-indicator">
+            <div class="speed-bar" id="speedBar" style="width: 0%">
+                <span id="speedPercent">0%</span>
+            </div>
+            <div class="relativistic-marker" style="left: 10%"></div>
+            <div class="relativistic-marker" style="left: 50%"></div>
+            <div class="relativistic-marker" style="left: 90%"></div>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="acceleration">Acceleration (G) in units of c/s</label>
+                <input type="range" id="acceleration" min="0.01" max="0.5" step="0.01" value="0.1">
+                <div class="value" id="accelerationValue">0.10 c/s</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="targetVelocity">Target Velocity V₁ (% of c)</label>
+                <input type="range" id="targetVelocity" min="10" max="99" step="1" value="50">
+                <div class="value" id="targetValue">50% (c/2)</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="separation">Separation Distance D (c·s)</label>
+                <input type="range" id="separation" min="0.1" max="2" step="0.1" value="0.5">
+                <div class="value" id="separationValue">0.5 c·s</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="uniformDuration">Uniform Motion Duration (T2-T1)</label>
+                <input type="range" id="uniformDuration" min="1" max="10" step="0.5" value="5">
+                <div class="value" id="uniformValue">5.0 s</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="animationSpeed">Animation Speed</label>
+                <input type="range" id="animationSpeed" min="0.5" max="5" step="0.5" value="1">
+                <div class="value" id="speedValue">1.0x</div>
+            </div>
+            
+            <div class="control-group">
+                <button onclick="startAnimation()">🚀 Launch Particle</button>
+            </div>
+        </div>
+        
+        <div class="status-display">
+            <div class="status-item">
+                <div class="status-label">Current Time</div>
+                <div class="status-value" id="currentTime">0.00 s</div>
+            </div>
+            <div class="status-item">
+                <div class="status-label">Position</div>
+                <div class="status-value" id="currentPosition">0.00 c·s</div>
+            </div>
+            <div class="status-item">
+                <div class="status-label">Velocity</div>
+                <div class="status-value" id="currentVelocity">0.00 c</div>
+            </div>
+            <div class="status-item">
+                <div class="status-label">v/c Ratio</div>
+                <div class="status-value" id="velocityRatio">0.0%</div>
+            </div>
+            <div class="status-item">
+                <div class="status-label">Lorentz γ</div>
+                <div class="status-value" id="lorentzFactor">1.000</div>
+            </div>
+            <div class="status-item">
+                <div class="status-label">Phase</div>
+                <div class="status-value" id="currentPhase">At Rest</div>
+            </div>
+        </div>
+        
+        <div class="equations">
+            <div class="equation-box">
+                <div class="equation-label">Point P₀ at T₀ (Start)</div>
+                <div class="equation">Position: X₀</div>
+                <div class="equation">Velocity: V₀ = 0</div>
+                <div class="equation">Action: Starts accelerating</div>
+            </div>
+            <div class="equation-box">
+                <div class="equation-label">Point P₀ at T₁ (Stop Accel)</div>
+                <div class="equation">X₁ = X₀ + ½G(T₁-T₀)²</div>
+                <div class="equation">V₁ = G(T₁-T₀)</div>
+                <div class="equation">Action: Stops accelerating</div>
+            </div>
+            <div class="equation-box">
+                <div class="equation-label">Point P₀ at T₂ (Uniform)</div>
+                <div class="equation">X₂ = X₁ + V₁(T₂-T₁)</div>
+                <div class="equation">Velocity: V₁ (constant)</div>
+                <div class="equation">γ = 1/√(1 - V₁²/c²)</div>
+            </div>
+            <div class="equation-box">
+                <div class="equation-label">Motion Equations:</div>
+                <div class="equation">T₀≤t≤T₁: x = X₀ + ½G(t-T₀)²</div>
+                <div class="equation">T₁≤t≤T₂: x = X₁ + V₁(t-T₁)</div>
+                <div class="equation">t>T₂: x = X₂ + V₁(t-T₂)</div>
+            </div>
+        </div>
+        
+        <div class="warning" id="warningBox" style="display: none;">
+            ⚠️ At these speeds, relativistic effects become significant! Classical mechanics is an approximation.
+        </div>
+        
+        <div class="info-panel">
+            <h3>🌟 Two Particles Motion Analysis</h3>
+            <p>
+                This simulation shows two particles P₀ and P₁ with identical acceleration profiles but separated by distance D:
+            </p>
+            <ul style="margin-left: 20px; margin-top: 10px; line-height: 1.8;">
+                <li><strong>Speed of Light:</strong> c = 299,792,458 m/s (we use c = 1 in natural units)</li>
+                <li><strong>Relativistic Effects:</strong> Become noticeable above ~10% of c, dominant above ~90% of c</li>
+                <li><strong>Lorentz Factor γ:</strong> Measures time dilation and length contraction effects</li>
+                <li><strong>Classical Approximation:</strong> We use v = Gt, but in reality, acceleration decreases as v→c</li>
+            </ul>
+            <p style="margin-top: 15px;">
+                <strong>Important Note:</strong> This simulation uses classical kinematics (constant acceleration in the observer's frame) as per your paper's assumptions. In real relativistic physics, the proper acceleration (felt by the particle) would need to increase dramatically to maintain constant coordinate acceleration as v approaches c.
+            </p>
+            <p style="margin-top: 10px;">
+                <strong>Key Values:</strong>
+                <br>• At v = 0.1c: γ ≈ 1.005 (0.5% effects)
+                <br>• <span style="color: #2a5298; font-weight: bold;">At v = 0.5c (c/2): γ ≈ 1.155 (15% effects)</span> ← Default V₁
+                <br>• At v = 0.9c: γ ≈ 2.294 (129% effects)
+                <br>• At v = 0.99c: γ ≈ 7.089 (609% effects)
+            </p>
+            <p style="margin-top: 10px; padding: 10px; background: #e6f2ff; border-radius: 5px;">
+                <strong>With V₁ = c/2:</strong> The Lorentz factor γ = 1.155 means time dilation and length contraction effects are about 15.5%. This is a significant but not extreme relativistic velocity, making it ideal for demonstrating relativistic effects while keeping the mathematics manageable.
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        const posCanvas = document.getElementById('positionGraph');
+        const posCtx = posCanvas.getContext('2d');
+        const velCanvas = document.getElementById('velocityGraph');
+        const velCtx = velCanvas.getContext('2d');
+        const distCanvas = document.getElementById('distanceGraph');
+        const distCtx = distCanvas.getContext('2d');
+        
+        let animationId = null;
+        let startTime = null;
+        let currentT = 0;
+        
+        // Store trajectory data for both particles
+        let positionDataP0 = [];
+        let positionDataP1 = [];
+        let velocityDataP0 = [];
+        let velocityDataP1 = [];
+        let distanceDataP0 = [];
+        let distanceDataP1 = [];
+        let separationData = [];
+        
+        // Constants (using c = 1 in natural units)
+        const c = 1; // Speed of light in natural units
+        
+        function calculateLorentzFactor(v) {
+            if (v >= c) return Infinity;
+            return 1 / Math.sqrt(1 - (v * v) / (c * c));
+        }
+        
+        function drawAxes(ctx, canvas, xlabel, ylabel, maxX, maxY) {
+            const padding = 50;
+            const width = canvas.width - 2 * padding;
+            const height = canvas.height - 2 * padding;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw axes
+            ctx.strokeStyle = '#4a5568';
+            ctx.lineWidth = 2;
+            
+            // X-axis
+            ctx.beginPath();
+            ctx.moveTo(padding, canvas.height - padding);
+            ctx.lineTo(canvas.width - padding, canvas.height - padding);
+            ctx.stroke();
+            
+            // Y-axis
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, canvas.height - padding);
+            ctx.stroke();
+            
+            // Arrow heads
+            ctx.fillStyle = '#4a5568';
+            // X-axis arrow
+            ctx.beginPath();
+            ctx.moveTo(canvas.width - padding, canvas.height - padding);
+            ctx.lineTo(canvas.width - padding - 10, canvas.height - padding - 5);
+            ctx.lineTo(canvas.width - padding - 10, canvas.height - padding + 5);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Y-axis arrow
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding - 5, padding + 10);
+            ctx.lineTo(padding + 5, padding + 10);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Labels
+            ctx.fillStyle = '#2d3748';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(xlabel, canvas.width / 2, canvas.height - 15);
+            
+            ctx.save();
+            ctx.translate(20, canvas.height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText(ylabel, 0, 0);
+            ctx.restore();
+            
+            // Grid lines
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 0.5;
+            
+            // Horizontal grid
+            for (let i = 1; i <= 5; i++) {
+                const y = padding + (i * height / 6);
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(canvas.width - padding, y);
+                ctx.stroke();
+                
+                // Y-axis labels
+                const value = maxY * (1 - i / 6);
+                ctx.fillStyle = '#718096';
+                ctx.font = '11px Arial';
+                ctx.textAlign = 'right';
+                ctx.fillText(value.toFixed(2), padding - 5, y + 3);
+            }
+            
+            // Vertical grid
+            for (let i = 1; i <= 5; i++) {
+                const x = padding + (i * width / 6);
+                ctx.beginPath();
+                ctx.moveTo(x, padding);
+                ctx.lineTo(x, canvas.height - padding);
+                ctx.stroke();
+                
+                // X-axis labels
+                const value = maxX * (i / 6);
+                ctx.fillStyle = '#718096';
+                ctx.font = '11px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(value.toFixed(2), x, canvas.height - padding + 15);
+            }
+            
+            return { padding, width, height };
+        }
+        
+        function plotData(ctx, canvas, data, maxX, maxY, color, lineWidth = 3) {
+            const padding = 50;
+            const width = canvas.width - 2 * padding;
+            const height = canvas.height - 2 * padding;
+            
+            if (data.length < 2) return;
+            
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineWidth;
+            ctx.beginPath();
+            
+            data.forEach((point, i) => {
+                const x = padding + (point.x / maxX) * width;
+                const y = canvas.height - padding - (point.y / maxY) * height;
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            
+            ctx.stroke();
+        }
+        
+        function calculateMotion(t, particleIndex) {
+            const G = parseFloat(document.getElementById('acceleration').value);
+            const targetV = parseFloat(document.getElementById('targetVelocity').value) / 100;
+            const uniformDuration = parseFloat(document.getElementById('uniformDuration').value);
+            const D = parseFloat(document.getElementById('separation').value);
+            
+            // Define time points (same for both particles)
+            const T0 = 0; // Start time
+            const T1 = targetV / G; // Time when acceleration stops
+            const T2 = T1 + uniformDuration; // End of tracked uniform motion
+            
+            // Define velocities (same for both particles)
+            const V0 = 0; // Initial velocity at T0
+            const V1 = G * (T1 - T0); // Velocity at T1 (same as targetV)
+            
+            // Define initial positions (P1 starts D ahead of P0)
+            const X0_P0 = 0; // P0 initial position
+            const X0_P1 = D; // P1 initial position (separated by D)
+            const X0 = particleIndex === 0 ? X0_P0 : X0_P1;
+            
+            // Calculate positions at key times
+            const X1 = X0 + 0.5 * G * (T1 - T0) * (T1 - T0); // Position at T1
+            const X2 = X1 + V1 * (T2 - T1); // Position at T2
+            
+            let position, velocity, phase;
+            const particleName = particleIndex === 0 ? "P₀" : "P₁";
+            
+            if (t <= T0) {
+                // Before start
+                position = X0;
+                velocity = V0;
+                phase = `At Rest (${particleName} at X₀${particleIndex === 1 ? '+D' : ''})`;
+            } else if (t <= T1) {
+                // Acceleration phase: T0 < t ≤ T1
+                const dt = t - T0;
+                position = X0 + 0.5 * G * dt * dt;
+                velocity = G * dt;
+                phase = `${particleName} Accelerating`;
+            } else if (t <= T2) {
+                // Uniform motion phase: T1 < t ≤ T2
+                position = X1 + V1 * (t - T1);
+                velocity = V1;
+                phase = `${particleName} Uniform Motion`;
+            } else {
+                // After T2: continue uniform motion
+                position = X2 + V1 * (t - T2);
+                velocity = V1;
+                phase = `${particleName} Continuing`;
+            }
+            
+            // Calculate relativistic effects
+            const gamma = calculateLorentzFactor(velocity);
+            
+            return { 
+                position, velocity, phase, gamma, 
+                T0, T1, T2, 
+                X0, X1, X2,
+                V0, V1,
+                particleName, D
+            };
+        }
+        
+        function drawDistanceMarkers(ctx, canvas, t, maxX, maxY, motion) {
+            const padding = 50;
+            const width = canvas.width - 2 * padding;
+            const height = canvas.height - 2 * padding;
+            
+            // Mark T0, T1, T2 times
+            const times = [
+                { t: motion.T0, label: 'T₀', color: '#48bb78', dist: 0 },
+                { t: motion.T1, label: 'T₁', color: '#f6ad55', dist: motion.X1 - motion.X0 },
+                { t: motion.T2, label: 'T₂', color: '#9f7aea', dist: motion.X2 - motion.X0 }
+            ];
+            
+            times.forEach(timePoint => {
+                if (t >= timePoint.t && timePoint.t <= maxX) {
+                    const x = padding + (timePoint.t / maxX) * width;
+                    
+                    // Vertical line
+                    ctx.strokeStyle = timePoint.color;
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([5, 5]);
+                    ctx.beginPath();
+                    ctx.moveTo(x, padding);
+                    ctx.lineTo(x, canvas.height - padding);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    
+                    // Time label
+                    ctx.fillStyle = timePoint.color;
+                    ctx.font = 'bold 12px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(timePoint.label, x, padding - 5);
+                    
+                    // Distance point
+                    if (timePoint.dist <= maxY) {
+                        const y = canvas.height - padding - (timePoint.dist / maxY) * height;
+                        ctx.beginPath();
+                        ctx.arc(x, y, 6, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // Distance label
+                        ctx.font = '11px Arial';
+                        ctx.fillText(`d=${timePoint.dist.toFixed(2)}`, x, y - 10);
+                    }
+                }
+            });
+            
+            // Current position marker
+            if (t > 0 && t <= maxX) {
+                const currentDistance = motion.position - motion.X0;
+                const x = padding + (t / maxX) * width;
+                const y = canvas.height - padding - (currentDistance / maxY) * height;
+                
+                // Animated marker
+                ctx.fillStyle = '#9f7aea';
+                ctx.strokeStyle = '#9f7aea';
+                ctx.lineWidth = 2;
+                
+                // Pulsing effect
+                const pulse = Math.sin(Date.now() / 200) * 3 + 8;
+                ctx.beginPath();
+                ctx.arc(x, y, pulse, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Reference line at distance = 0
+            ctx.strokeStyle = '#cbd5e0';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([2, 2]);
+            const y0 = canvas.height - padding;
+            ctx.beginPath();
+            ctx.moveTo(padding, y0);
+            ctx.lineTo(canvas.width - padding, y0);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            ctx.fillStyle = '#718096';
+            ctx.font = '10px Arial';
+            ctx.textAlign = 'right';
+            ctx.fillText('X₀ reference', padding - 5, y0);
+        }
+        
+        function drawMarkers(ctx, canvas, t, maxX, maxY, type, motion) {
+            const padding = 50;
+            const width = canvas.width - 2 * padding;
+            const height = canvas.height - 2 * padding;
+            
+            // Mark T0 (start)
+            if (motion.T0 <= maxX) {
+                const x0 = padding + (motion.T0 / maxX) * width;
+                
+                ctx.strokeStyle = '#48bb78';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath();
+                ctx.moveTo(x0, padding);
+                ctx.lineTo(x0, canvas.height - padding);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                ctx.fillStyle = '#22543d';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('T₀', x0, padding - 5);
+                
+                // Mark X0 position on position graph
+                if (type === 'position') {
+                    const y0 = canvas.height - padding - (motion.X0 / maxY) * height;
+                    ctx.fillStyle = '#48bb78';
+                    ctx.beginPath();
+                    ctx.arc(x0, y0, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillText('P₀ at X₀', x0 - 30, y0 - 10);
+                    ctx.font = '10px Arial';
+                    ctx.fillText('V₀=0', x0 - 25, y0 + 15);
+                }
+            }
+            
+            // Mark T1 transition point
+            if (t >= motion.T1 && motion.T1 <= maxX) {
+                const x1 = padding + (motion.T1 / maxX) * width;
+                
+                ctx.strokeStyle = '#f6ad55';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.moveTo(x1, padding);
+                ctx.lineTo(x1, canvas.height - padding);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // Label
+                ctx.fillStyle = '#dd6b20';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('T₁', x1, padding - 5);
+                
+                // Mark X1 position on position graph
+                if (type === 'position' && motion.X1 <= maxY) {
+                    const y1 = canvas.height - padding - (motion.X1 / maxY) * height;
+                    ctx.fillStyle = '#f6ad55';
+                    ctx.beginPath();
+                    ctx.arc(x1, y1, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillText('P₀ at X₁', x1 + 20, y1 - 5);
+                    ctx.font = '10px Arial';
+                    ctx.fillText(`V₁=${(motion.V1).toFixed(2)}c`, x1 + 20, y1 + 10);
+                }
+            }
+            
+            // Mark T2 point
+            if (t >= motion.T2 && motion.T2 <= maxX) {
+                const x2 = padding + (motion.T2 / maxX) * width;
+                
+                ctx.strokeStyle = '#9f7aea';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.moveTo(x2, padding);
+                ctx.lineTo(x2, canvas.height - padding);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // Label
+                ctx.fillStyle = '#553c9a';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('T₂', x2, padding - 5);
+                
+                // Mark X2 position on position graph
+                if (type === 'position' && motion.X2 <= maxY) {
+                    const y2 = canvas.height - padding - (motion.X2 / maxY) * height;
+                    ctx.fillStyle = '#9f7aea';
+                    ctx.beginPath();
+                    ctx.arc(x2, y2, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillText('P₀ at X₂', x2 + 20, y2 - 5);
+                    ctx.font = '10px Arial';
+                    ctx.fillText(`V=${(motion.V1).toFixed(2)}c`, x2 + 20, y2 + 10);
+                }
+            }
+            
+            // Speed of light line (for velocity graph)
+            if (type === 'velocity') {
+                const yc = canvas.height - padding - (1 / maxY) * height;
+                
+                ctx.strokeStyle = '#e53e3e';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([10, 5]);
+                ctx.beginPath();
+                ctx.moveTo(padding, yc);
+                ctx.lineTo(canvas.width - padding, yc);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                ctx.fillStyle = '#e53e3e';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText('c (speed of light)', canvas.width - padding - 100, yc - 5);
+            }
+            
+            // Current position marker
+            if (t > 0 && t <= maxX) {
+                const motion = calculateMotion(t);
+                const x = padding + (t / maxX) * width;
+                
+                if (type === 'position') {
+                    const y = canvas.height - padding - (motion.position / maxY) * height;
+                    
+                    // Draw point with glow effect for high speeds
+                    const glowSize = 5 + motion.velocity * 10;
+                    const gradient = ctx.createRadialGradient(x, y, 0, x, y, glowSize);
+                    gradient.addColorStop(0, 'rgba(42, 82, 152, 1)');
+                    gradient.addColorStop(1, 'rgba(42, 82, 152, 0)');
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(x, y, glowSize, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#2a5298';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (type === 'velocity') {
+                    const y = canvas.height - padding - (motion.velocity / maxY) * height;
+                    
+                    // Color based on relativistic effects
+                    let color = '#48bb78'; // Green for low speeds
+                    if (motion.velocity > 0.5) color = '#f6e05e'; // Yellow for medium
+                    if (motion.velocity > 0.9) color = '#f56565'; // Red for high
+                    
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 10, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
+        }
+        
+        function animate() {
+            if (!startTime) startTime = Date.now();
+            const animSpeed = parseFloat(document.getElementById('animationSpeed').value);
+            const elapsed = (Date.now() - startTime) / 1000 * animSpeed;
+            currentT = elapsed;
+            
+            const G = parseFloat(document.getElementById('acceleration').value);
+            const targetV = parseFloat(document.getElementById('targetVelocity').value) / 100;
+            const uniformDuration = parseFloat(document.getElementById('uniformDuration').value);
+            const T1 = targetV / G;
+            const T2 = T1 + uniformDuration;
+            const maxTime = T2 + 2; // Show a bit after T2
+            
+            // Calculate maximum values for scaling
+            const X1 = 0.5 * G * T1 * T1;
+            const X2 = X1 + targetV * uniformDuration;
+            const maxPosition = X2 + targetV * 2;
+            const maxVelocity = 1.1; // Show slightly above c
+            
+            // Update data arrays for both particles
+            if (currentT <= maxTime) {
+                const motionP0 = calculateMotion(currentT, 0);
+                const motionP1 = calculateMotion(currentT, 1);
+                
+                positionDataP0.push({ x: currentT, y: motionP0.position });
+                positionDataP1.push({ x: currentT, y: motionP1.position });
+                velocityDataP0.push({ x: currentT, y: motionP0.velocity });
+                velocityDataP1.push({ x: currentT, y: motionP1.velocity });
+                
+                // Distance from X0 for each particle
+                distanceDataP0.push({ x: currentT, y: motionP0.position });
+                distanceDataP1.push({ x: currentT, y: motionP1.position });
+                
+                // Separation between particles
+                const currentSeparation = motionP1.position - motionP0.position;
+                separationData.push({ x: currentT, y: currentSeparation });
+                
+                // Update status display (show P0 info)
+                document.getElementById('currentTime').textContent = currentT.toFixed(2) + ' s';
+                document.getElementById('currentPosition').textContent = `P₀: ${motionP0.position.toFixed(2)}, P₁: ${motionP1.position.toFixed(2)}`;
+                document.getElementById('currentVelocity').textContent = motionP0.velocity.toFixed(3) + ' c';
+                document.getElementById('velocityRatio').textContent = (motionP0.velocity * 100).toFixed(1) + '%';
+                document.getElementById('lorentzFactor').textContent = motionP0.gamma.toFixed(3);
+                document.getElementById('currentPhase').textContent = `Separation: ${currentSeparation.toFixed(3)} c·s`;
+                
+                // Update speed bar
+                const speedPercent = Math.min(motionP0.velocity * 100, 100);
+                document.getElementById('speedBar').style.width = speedPercent + '%';
+                document.getElementById('speedPercent').textContent = speedPercent.toFixed(0) + '% c';
+                
+                // Show warning for relativistic speeds
+                if (motionP0.velocity > 0.3) {
+                    document.getElementById('warningBox').style.display = 'block';
+                }
+                
+                // Color the speed bar based on speed
+                const speedBar = document.getElementById('speedBar');
+                if (motionP0.velocity < 0.3) {
+                    speedBar.style.background = 'linear-gradient(90deg, #48bb78 0%, #48bb78 100%)';
+                } else if (motionP0.velocity < 0.7) {
+                    speedBar.style.background = 'linear-gradient(90deg, #48bb78 0%, #f6e05e 100%)';
+                } else {
+                    speedBar.style.background = 'linear-gradient(90deg, #f6e05e 0%, #f56565 100%)';
+                }
+            }
+            
+            // Get current motion state for markers
+            const currentMotionP0 = calculateMotion(currentT, 0);
+            const currentMotionP1 = calculateMotion(currentT, 1);
+            
+            // Adjust max position for P1
+            const maxPositionWithD = maxPosition + parseFloat(document.getElementById('separation').value);
+            
+            // Draw position graph
+            drawAxes(posCtx, posCanvas, 'Time (seconds)', 'Position (light-seconds)', maxTime, maxPositionWithD);
+            plotData(posCtx, posCanvas, positionDataP0, maxTime, maxPositionWithD, '#2a5298', 3);
+            plotData(posCtx, posCanvas, positionDataP1, maxTime, maxPositionWithD, '#e53e3e', 3);
+            
+            // Draw velocity graph (same for both)
+            drawAxes(velCtx, velCanvas, 'Time (seconds)', 'Velocity (c)', maxTime, maxVelocity);
+            plotData(velCtx, velCanvas, velocityDataP0, maxTime, maxVelocity, '#48bb78', 3);
+            
+            // Draw separation graph instead of distance from X0
+            drawAxes(distCtx, distCanvas, 'Time (seconds)', 'Separation P₁ - P₀ (light-seconds)', maxTime, parseFloat(document.getElementById('separation').value) * 1.5);
+            plotData(distCtx, distCanvas, separationData, maxTime, parseFloat(document.getElementById('separation').value) * 1.5, '#9f7aea', 3);
+            
+            if (currentT < maxTime) {
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+        
+        function startAnimation() {
+            // Reset
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            startTime = null;
+            currentT = 0;
+            positionDataP0 = [];
+            positionDataP1 = [];
+            velocityDataP0 = [];
+            velocityDataP1 = [];
+            distanceDataP0 = [];
+            distanceDataP1 = [];
+            separationData = [];
+            
+            // Reset status
+            document.getElementById('currentTime').textContent = '0.00 s';
+            document.getElementById('currentPosition').textContent = '0.00 c·s';
+            document.getElementById('currentVelocity').textContent = '0.00 c';
+            document.getElementById('velocityRatio').textContent = '0.0%';
+            document.getElementById('lorentzFactor').textContent = '1.000';
+            document.getElementById('currentPhase').textContent = 'At Rest';
+            document.getElementById('warningBox').style.display = 'none';
+            document.getElementById('speedBar').style.width = '0%';
+            document.getElementById('speedPercent').textContent = '0%';
+            
+            // Start animation
+            animate();
+        }
+        
+        // Update display values
+        document.getElementById('acceleration').addEventListener('input', (e) => {
+            document.getElementById('accelerationValue').textContent = parseFloat(e.target.value).toFixed(2) + ' c/s';
+        });
+        
+        document.getElementById('targetVelocity').addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            if (value === 50) {
+                document.getElementById('targetValue').textContent = '50% (c/2)';
+            } else {
+                document.getElementById('targetValue').textContent = value + '%';
+            }
+        });
+        
+        document.getElementById('separation').addEventListener('input', (e) => {
+            document.getElementById('separationValue').textContent = parseFloat(e.target.value).toFixed(1) + ' c·s';
+        });
+        
+        document.getElementById('uniformDuration').addEventListener('input', (e) => {
+            document.getElementById('uniformValue').textContent = parseFloat(e.target.value).toFixed(1) + ' s';
+        });
+        
+        document.getElementById('animationSpeed').addEventListener('input', (e) => {
+            document.getElementById('speedValue').textContent = parseFloat(e.target.value).toFixed(1) + 'x';
+        });
+        
+        // Initial draw
+        drawAxes(posCtx, posCanvas, 'Time (seconds)', 'Position (light-seconds)', 10, 5);
+        drawAxes(velCtx, velCanvas, 'Time (seconds)', 'Velocity (c)', 10, 1.1);
+        drawAxes(distCtx, distCanvas, 'Time (seconds)', 'Distance from X₀ (light-seconds)', 10, 5);
+    </script>
+</body>
+</html>
