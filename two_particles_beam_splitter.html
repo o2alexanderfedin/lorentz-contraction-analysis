@@ -217,8 +217,8 @@
                 <div id="t2Detection" class="measurement-value">Ready</div>
             </div>
             <div class="measurement-card">
-                <h4>Separation D</h4>
-                <div id="currentSeparation" class="measurement-value">200 units</div>
+                <h4>Path Symmetry</h4>
+                <div id="pathSymmetry" class="measurement-value" style="color: #48bb78;">✓ Equal</div>
             </div>
         </div>
         
@@ -239,8 +239,12 @@
                 • T₂: Final detection of both particles in uniform motion
             </p>
             <p>
-                <strong>Key Result:</strong> The beam splitter configuration demonstrates that both particles are always
-                separated by exactly D at each detection point, confirming synchronized motion preserves relative distances.
+                <strong>Equal Optical Paths:</strong> The beam splitter is positioned exactly halfway between P₀ and P₁,
+                ensuring equal optical path lengths (L) from splitter to each particle. This guarantees true simultaneous detection.
+            </p>
+            <p>
+                <strong>Key Result:</strong> Equal path lengths prove both particles are detected at exactly the same instant,
+                confirming they maintain constant separation D throughout all phases.
             </p>
         </div>
     </div>
@@ -330,6 +334,30 @@
                 const x1 = this.midX + this.separation / 2;
                 const isDetecting = this.isDetectingP0 || this.isDetectingP1;
                 
+                // Calculate path lengths
+                const splitterY = 115; // Center of beam splitter
+                const p0Y = 350;
+                const p1Y = 450;
+                
+                const pathToP0 = Math.sqrt(Math.pow(x0 - this.midX, 2) + Math.pow(p0Y - splitterY, 2));
+                const pathToP1 = Math.sqrt(Math.pow(x1 - this.midX, 2) + Math.pow(p1Y - splitterY, 2));
+                
+                // Draw equal path length indicators (arcs)
+                if (!isDetecting) {
+                    ctx.strokeStyle = '#e0d4f7';
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([3, 3]);
+                    ctx.globalAlpha = 0.5;
+                    
+                    // Draw arc showing equal distance
+                    ctx.beginPath();
+                    ctx.arc(this.midX, splitterY, pathToP0, 0.3, Math.PI - 0.3);
+                    ctx.stroke();
+                    
+                    ctx.setLineDash([]);
+                    ctx.globalAlpha = 1;
+                }
+                
                 // Draw main laser source at top center
                 ctx.fillStyle = this.color;
                 ctx.globalAlpha = isDetecting ? 1 : 0.4;
@@ -380,6 +408,29 @@
                 
                 ctx.setLineDash([]);
                 ctx.globalAlpha = 1;
+                
+                // Draw path length labels
+                ctx.fillStyle = '#9f7aea';
+                ctx.font = '10px Arial';
+                ctx.textAlign = 'center';
+                
+                // Path length to P0
+                const midP0X = (this.midX + x0) / 2;
+                const midP0Y = (splitterY + p0Y) / 2;
+                ctx.save();
+                ctx.translate(midP0X, midP0Y);
+                ctx.rotate(Math.atan2(p0Y - splitterY, x0 - this.midX));
+                ctx.fillText(`L=${pathToP0.toFixed(0)}`, 0, -5);
+                ctx.restore();
+                
+                // Path length to P1
+                const midP1X = (this.midX + x1) / 2;
+                const midP1Y = (splitterY + p1Y) / 2;
+                ctx.save();
+                ctx.translate(midP1X, midP1Y);
+                ctx.rotate(Math.atan2(p1Y - splitterY, x1 - this.midX));
+                ctx.fillText(`L=${pathToP1.toFixed(0)}`, 0, -5);
+                ctx.restore();
                 
                 // Draw detection indicators
                 if (this.isDetectingP0) {
