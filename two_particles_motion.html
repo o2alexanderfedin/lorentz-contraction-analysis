@@ -640,7 +640,8 @@
                             ctx.arc(x, y0, 4, 0, Math.PI * 2);
                             ctx.fill();
                             ctx.font = '10px Arial';
-                            ctx.fillText('P₀@X₁', x - 25, y0 - 5);
+                            ctx.textAlign = 'left';
+                            ctx.fillText('P₀@X₁', x + 10, y0 + 3);
                         }
                         if (motionP1.X1 <= maxY) {
                             const y1 = canvas.height - padding - (motionP1.X1 / maxY) * height;
@@ -649,7 +650,8 @@
                             ctx.arc(x, y1, 4, 0, Math.PI * 2);
                             ctx.fill();
                             ctx.font = '10px Arial';
-                            ctx.fillText('P₁@X₁', x + 25, y1 - 5);
+                            ctx.textAlign = 'left';
+                            ctx.fillText('P₁@X₁', x + 10, y1 + 3);
                         }
                     }
                     
@@ -662,7 +664,8 @@
                             ctx.arc(x, y0, 4, 0, Math.PI * 2);
                             ctx.fill();
                             ctx.font = '10px Arial';
-                            ctx.fillText('P₀@X₂', x - 25, y0 - 5);
+                            ctx.textAlign = 'left';
+                            ctx.fillText('P₀@X₂', x + 10, y0 + 3);
                         }
                         if (motionP1.X2 <= maxY) {
                             const y1 = canvas.height - padding - (motionP1.X2 / maxY) * height;
@@ -671,7 +674,8 @@
                             ctx.arc(x, y1, 4, 0, Math.PI * 2);
                             ctx.fill();
                             ctx.font = '10px Arial';
-                            ctx.fillText('P₁@X₂', x + 25, y1 - 5);
+                            ctx.textAlign = 'left';
+                            ctx.fillText('P₁@X₂', x + 10, y1 + 3);
                         }
                     }
                 }
