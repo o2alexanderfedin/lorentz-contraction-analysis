@@ -502,16 +502,40 @@
         function animate() {
             if (!isAnimating) return;
             
-            animationProgress += 0.02;
+            animationProgress += 0.01;
             if (animationProgress > 1) {
                 animationProgress = 0;
             }
             
-            // Animate velocity change
-            const targetVelocity = parseFloat(document.getElementById('velocity').value);
-            velocity = velocity + (targetVelocity - velocity) * 0.1;
+            // Oscillate velocity for demonstration
+            velocity = 0.5 + 0.4 * Math.sin(animationProgress * Math.PI * 2);
+            document.getElementById('velocity').value = velocity;
+            document.getElementById('velocityValue').textContent = (velocity * 100).toFixed(0) + '% c';
             
             updateDisplay();
+            
+            // Add moving animation for the rod
+            const movingX = 50 + animationProgress * 400;
+            movingCtx.clearRect(0, 0, movingCanvas.width, movingCanvas.height);
+            drawGrid(movingCtx, true);
+            
+            const gamma = calculateLorentzFactor(velocity);
+            const contractedLength = properLength / gamma;
+            
+            // Draw moving rod at animated position
+            drawRod(movingCtx, movingX, contractedLength * pixelsPerMeter, '#e53e3e', 
+                   `L = ${contractedLength.toFixed(1)}m`, true);
+            
+            // Draw measurement beams if simultaneous method selected
+            const method = document.getElementById('measurementMethod').value;
+            if (method === 'simultaneous') {
+                drawMeasurementBeams(movingCtx, movingX, movingX + contractedLength * pixelsPerMeter);
+            }
+            
+            movingCtx.fillStyle = '#f56565';
+            movingCtx.font = 'bold 12px Arial';
+            movingCtx.fillText('👤 Observer sees rod moving at ' + (velocity * 100).toFixed(0) + '% c', 300, 30);
+            
             animationId = requestAnimationFrame(animate);
         }
         
