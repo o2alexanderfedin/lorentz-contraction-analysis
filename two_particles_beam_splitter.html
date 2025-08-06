@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Particles with Beam Splitter Detection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: white;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 1400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            color: #333;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #764ba2;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .canvas-container {
+            position: relative;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            background: white;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        
+        .control-group .value {
+            text-align: center;
+            font-size: 1.2em;
+            color: #764ba2;
+            font-weight: bold;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+            width: 100%;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(118, 75, 162, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .info-panel {
+            background: linear-gradient(135deg, #f0e6ff 0%, #e6f2ff 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #764ba2;
+        }
+        
+        .info-panel h3 {
+            color: #764ba2;
+            margin-bottom: 10px;
+        }
+        
+        .info-panel p {
+            line-height: 1.6;
+            color: #4a5568;
+            margin-bottom: 10px;
+        }
+        
+        .measurements {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .measurement-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            text-align: center;
+        }
+        
+        .measurement-card h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .measurement-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #48bb78;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔬 Beam Splitter Detection System</h1>
+        <p class="subtitle">Single Laser with Beam Splitter Detects Both P₀ and P₁ Simultaneously</p>
+        
+        <div class="canvas-container">
+            <canvas id="motionCanvas" width="1300" height="600"></canvas>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="separation">Separation Distance D (units)</label>
+                <input type="range" id="separation" min="100" max="400" value="200" step="10">
+                <div class="value" id="separationValue">200 units</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="acceleration">Acceleration G (m/s²)</label>
+                <input type="range" id="acceleration" min="1" max="10" value="5" step="0.5">
+                <div class="value" id="accelerationValue">5.0 m/s²</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="t1Time">T₁ Time (seconds)</label>
+                <input type="range" id="t1Time" min="1" max="5" value="2" step="0.1">
+                <div class="value" id="t1Value">2.0 s</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="t2Time">T₂ Time (seconds)</label>
+                <input type="range" id="t2Time" min="3" max="10" value="5" step="0.1">
+                <div class="value" id="t2Value">5.0 s</div>
+            </div>
+            
+            <div class="control-group">
+                <button onclick="startAnimation()">▶️ Start Synchronized Detection</button>
+            </div>
+        </div>
+        
+        <div class="measurements">
+            <div class="measurement-card">
+                <h4>T₀ Detection</h4>
+                <div id="t0Detection" class="measurement-value">Ready</div>
+            </div>
+            <div class="measurement-card">
+                <h4>T₁ Detection</h4>
+                <div id="t1Detection" class="measurement-value">Ready</div>
+            </div>
+            <div class="measurement-card">
+                <h4>T₂ Detection</h4>
+                <div id="t2Detection" class="measurement-value">Ready</div>
+            </div>
+            <div class="measurement-card">
+                <h4>Separation D</h4>
+                <div id="currentSeparation" class="measurement-value">200 units</div>
+            </div>
+        </div>
+        
+        <div class="info-panel">
+            <h3>🔬 Beam Splitter Detection Principle</h3>
+            <p>
+                <strong>Single Laser per Time Point:</strong> Instead of separate lasers for each particle, we use a single laser
+                with a beam splitter at each time point (T₀, T₁, T₂).
+            </p>
+            <p>
+                <strong>Simultaneous Detection:</strong> The beam splitter divides each laser beam to detect both P₀ and P₁
+                simultaneously, proving they maintain constant separation D.
+            </p>
+            <p>
+                <strong>Three Beam Splitters:</strong>
+                • T₀: Triggers both particles to start acceleration
+                • T₁: Detects both particles at end of acceleration phase
+                • T₂: Final detection of both particles in uniform motion
+            </p>
+            <p>
+                <strong>Key Result:</strong> The beam splitter configuration demonstrates that both particles are always
+                separated by exactly D at each detection point, confirming synchronized motion preserves relative distances.
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        // Particle class
+        class Particle {
+            constructor(name, x0, color = '#764ba2') {
+                this.name = name;
+                this.x0 = x0;
+                this.x = x0;
+                this.y = 400;
+                this.color = color;
+                this.isActive = false;
+                this.velocity = 0;
+            }
+            
+            updatePosition(x) {
+                this.x = x;
+            }
+            
+            draw(ctx, yOffset = 0) {
+                const y = this.y + yOffset;
+                
+                ctx.fillStyle = this.isActive ? this.color : '#cbd5e0';
+                ctx.beginPath();
+                ctx.arc(this.x, y, 15, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.strokeStyle = this.isActive ? '#553c9a' : '#a0aec0';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(this.name, this.x, y + 5);
+                
+                if (this.isActive && this.x > this.x0 + 10) {
+                    ctx.strokeStyle = '#48bb78';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(this.x + 20, y);
+                    ctx.lineTo(this.x + 60, y);
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(this.x + 60, y);
+                    ctx.lineTo(this.x + 50, y - 8);
+                    ctx.lineTo(this.x + 50, y + 8);
+                    ctx.closePath();
+                    ctx.fillStyle = '#48bb78';
+                    ctx.fill();
+                }
+            }
+        }
+        
+        // BeamSplitterLaser class - single laser that detects both particles
+        class BeamSplitterLaser {
+            constructor(midX, separation, label, color) {
+                this.midX = midX;
+                this.separation = separation;
+                this.label = label;
+                this.color = color;
+                this.detectionRange = 20;
+                this.isDetectingP0 = false;
+                this.isDetectingP1 = false;
+            }
+            
+            updatePosition(midX, separation) {
+                this.midX = midX;
+                this.separation = separation;
+            }
+            
+            checkDetection(p0x, p1x) {
+                const x0 = this.midX - this.separation / 2;
+                const x1 = this.midX + this.separation / 2;
+                
+                this.isDetectingP0 = Math.abs(p0x - x0) < this.detectionRange;
+                this.isDetectingP1 = Math.abs(p1x - x1) < this.detectionRange;
+                
+                return this.isDetectingP0 && this.isDetectingP1;
+            }
+            
+            draw(ctx) {
+                const x0 = this.midX - this.separation / 2;
+                const x1 = this.midX + this.separation / 2;
+                const isDetecting = this.isDetectingP0 || this.isDetectingP1;
+                
+                // Draw main laser source at top center
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = isDetecting ? 1 : 0.4;
+                ctx.fillRect(this.midX - 20, 50, 40, 30);
+                
+                // Draw beam splitter diamond
+                ctx.beginPath();
+                ctx.moveTo(this.midX, 100);
+                ctx.lineTo(this.midX - 15, 115);
+                ctx.lineTo(this.midX, 130);
+                ctx.lineTo(this.midX + 15, 115);
+                ctx.closePath();
+                ctx.fillStyle = '#9f7aea';
+                ctx.fill();
+                ctx.strokeStyle = '#6b46c1';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Draw split beams to both detection points
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = 3;
+                ctx.globalAlpha = isDetecting ? 0.8 : 0.2;
+                
+                // Beam from splitter to P0 position
+                ctx.setLineDash([10, 5]);
+                ctx.beginPath();
+                ctx.moveTo(this.midX, 130);
+                ctx.lineTo(x0, 350);
+                ctx.stroke();
+                
+                // Vertical beam at P0
+                ctx.beginPath();
+                ctx.moveTo(x0, 350);
+                ctx.lineTo(x0, 450);
+                ctx.stroke();
+                
+                // Beam from splitter to P1 position
+                ctx.beginPath();
+                ctx.moveTo(this.midX, 130);
+                ctx.lineTo(x1, 450);
+                ctx.stroke();
+                
+                // Vertical beam at P1
+                ctx.beginPath();
+                ctx.moveTo(x1, 450);
+                ctx.lineTo(x1, 550);
+                ctx.stroke();
+                
+                ctx.setLineDash([]);
+                ctx.globalAlpha = 1;
+                
+                // Draw detection indicators
+                if (this.isDetectingP0) {
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = this.color;
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = 0.3;
+                    ctx.beginPath();
+                    ctx.arc(x0, 350, 25, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = 1;
+                }
+                
+                if (this.isDetectingP1) {
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = this.color;
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = 0.3;
+                    ctx.beginPath();
+                    ctx.arc(x1, 450, 25, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = 1;
+                }
+                
+                // Label
+                ctx.fillStyle = '#2d3748';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(this.label, this.midX, 40);
+            }
+        }
+        
+        // DualParticleSystem - manages both particles together
+        class DualParticleSystem {
+            constructor(p0, p1, lasers) {
+                this.p0 = p0;
+                this.p1 = p1;
+                this.lasers = lasers;
+                this.scale = 20;
+                this.elapsed = 0;
+                this.phase = 'idle';
+                this.G = 5;
+                this.T1 = 2;
+                this.T2 = 5;
+                this.isRunning = false;
+            }
+            
+            reset() {
+                this.elapsed = 0;
+                this.phase = 'idle';
+                this.p0.x = this.p0.x0;
+                this.p0.isActive = false;
+                this.p1.x = this.p1.x0;
+                this.p1.isActive = false;
+                this.isRunning = false;
+            }
+            
+            start(G, T1, T2) {
+                this.G = G;
+                this.T1 = T1;
+                this.T2 = T2;
+                this.elapsed = 0;
+                this.isRunning = true;
+                this.p0.isActive = true;
+                this.p1.isActive = true;
+            }
+            
+            step(deltaTime) {
+                if (!this.isRunning) return;
+                
+                this.elapsed += deltaTime;
+                let x0, x1, velocity;
+                
+                if (this.elapsed < this.T1) {
+                    this.phase = 'accelerating';
+                    const displacement = 0.5 * this.G * this.elapsed * this.elapsed * this.scale;
+                    x0 = this.p0.x0 + displacement;
+                    x1 = this.p1.x0 + displacement;
+                    velocity = this.G * this.elapsed;
+                } else if (this.elapsed < this.T2) {
+                    this.phase = 'uniform';
+                    const V1 = this.G * this.T1;
+                    const X1_displacement = 0.5 * this.G * this.T1 * this.T1 * this.scale;
+                    const uniform_displacement = V1 * (this.elapsed - this.T1) * this.scale;
+                    x0 = this.p0.x0 + X1_displacement + uniform_displacement;
+                    x1 = this.p1.x0 + X1_displacement + uniform_displacement;
+                    velocity = V1;
+                } else {
+                    this.phase = 'detected';
+                    const V1 = this.G * this.T1;
+                    const X1_displacement = 0.5 * this.G * this.T1 * this.T1 * this.scale;
+                    const uniform_displacement = V1 * (this.T2 - this.T1) * this.scale;
+                    x0 = this.p0.x0 + X1_displacement + uniform_displacement;
+                    x1 = this.p1.x0 + X1_displacement + uniform_displacement;
+                    velocity = V1;
+                    
+                    if (this.elapsed > this.T2 + 1) {
+                        this.isRunning = false;
+                    }
+                }
+                
+                this.p0.updatePosition(x0);
+                this.p1.updatePosition(x1);
+                this.p0.velocity = velocity;
+                this.p1.velocity = velocity;
+                
+                // Update laser detection
+                this.lasers.forEach(laser => {
+                    laser.checkDetection(this.p0.x, this.p1.x);
+                });
+                
+                return this.phase;
+            }
+            
+            draw(ctx) {
+                // Draw lasers
+                this.lasers.forEach(laser => laser.draw(ctx));
+                
+                // Draw particles
+                this.p0.draw(ctx, -50);
+                this.p1.draw(ctx, 50);
+                
+                // Draw motion trails
+                if (this.p0.isActive && this.p0.x > this.p0.x0) {
+                    ctx.strokeStyle = this.p0.color + '40';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([5, 3]);
+                    ctx.beginPath();
+                    ctx.moveTo(this.p0.x0, 350);
+                    ctx.lineTo(this.p0.x - 15, 350);
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(this.p1.x0, 450);
+                    ctx.lineTo(this.p1.x - 15, 450);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+                
+                // Draw separation line
+                if (this.p0.isActive) {
+                    ctx.strokeStyle = '#9f7aea';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([5, 5]);
+                    ctx.beginPath();
+                    ctx.moveTo(this.p0.x, 350);
+                    ctx.lineTo(this.p1.x, 450);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    
+                    const midX = (this.p0.x + this.p1.x) / 2;
+                    ctx.fillStyle = '#9f7aea';
+                    ctx.font = 'bold 14px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`D = ${Math.abs(this.p1.x - this.p0.x).toFixed(0)}`, midX, 400);
+                }
+            }
+        }
+        
+        // Setup
+        const canvas = document.getElementById('motionCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let animationId = null;
+        let startTime = null;
+        let lastTime = 0;
+        
+        // Physics parameters
+        let G = 5;
+        let T1 = 2;
+        let T2 = 5;
+        let D = 200;
+        let X0_P0 = 300;
+        
+        // Create particles
+        const p0 = new Particle('P₀', X0_P0, '#4299e1');
+        const p1 = new Particle('P₁', X0_P0 + D, '#e53e3e');
+        
+        // Calculate laser positions
+        function calculateLaserPositions(x0, D, G, T1, T2) {
+            const scale = 20;
+            const midX0 = x0 + D / 2;
+            const displacement1 = 0.5 * G * T1 * T1 * scale;
+            const midX1 = midX0 + displacement1;
+            const V1 = G * T1;
+            const displacement2 = displacement1 + V1 * (T2 - T1) * scale;
+            const midX2 = x0 + D / 2 + displacement2;
+            return { midX0, midX1, midX2 };
+        }
+        
+        // Create beam splitter lasers
+        let positions = calculateLaserPositions(X0_P0, D, G, T1, T2);
+        const lasers = [
+            new BeamSplitterLaser(positions.midX0, D, 'Laser T₀', '#48bb78'),
+            new BeamSplitterLaser(positions.midX1, D, 'Laser T₁', '#f6ad55'),
+            new BeamSplitterLaser(positions.midX2, D, 'Laser T₂', '#f56565')
+        ];
+        
+        // Create dual particle system
+        const system = new DualParticleSystem(p0, p1, lasers);
+        
+        function drawStaticElements() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw coordinate axes
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1;
+            
+            ctx.beginPath();
+            ctx.moveTo(50, 350);
+            ctx.lineTo(1250, 350);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(50, 450);
+            ctx.lineTo(1250, 450);
+            ctx.stroke();
+            
+            // Draw labels
+            ctx.fillStyle = '#4a5568';
+            ctx.font = '11px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('P₀ trajectory', 55, 345);
+            ctx.fillText('P₁ trajectory', 55, 445);
+            
+            // Draw position markers
+            ctx.textAlign = 'center';
+            positions = calculateLaserPositions(X0_P0, D, G, T1, T2);
+            
+            // T0 positions
+            ctx.fillText('X₀', X0_P0, 370);
+            ctx.fillText('X₀+D', X0_P0 + D, 470);
+            
+            // T1 positions
+            const x1_p0 = positions.midX1 - D/2;
+            const x1_p1 = positions.midX1 + D/2;
+            ctx.fillText('X₁', x1_p0, 370);
+            ctx.fillText('X₁+D', x1_p1, 470);
+            
+            // T2 positions
+            const x2_p0 = positions.midX2 - D/2;
+            const x2_p1 = positions.midX2 + D/2;
+            ctx.fillText('X₂', x2_p0, 370);
+            ctx.fillText('X₂+D', x2_p1, 470);
+        }
+        
+        function animate(timestamp) {
+            if (!startTime) {
+                startTime = timestamp;
+                lastTime = timestamp;
+            }
+            
+            const deltaTime = (timestamp - lastTime) / 1000;
+            lastTime = timestamp;
+            
+            drawStaticElements();
+            
+            const phase = system.step(deltaTime);
+            system.draw(ctx);
+            
+            // Update detection indicators
+            const t0Both = lasers[0].isDetectingP0 && lasers[0].isDetectingP1;
+            const t1Both = lasers[1].isDetectingP0 && lasers[1].isDetectingP1;
+            const t2Both = lasers[2].isDetectingP0 && lasers[2].isDetectingP1;
+            
+            document.getElementById('t0Detection').textContent = t0Both ? 'BOTH!' : 
+                (lasers[0].isDetectingP0 ? 'P₀' : (lasers[0].isDetectingP1 ? 'P₁' : 'Ready'));
+            document.getElementById('t1Detection').textContent = t1Both ? 'BOTH!' : 
+                (lasers[1].isDetectingP0 ? 'P₀' : (lasers[1].isDetectingP1 ? 'P₁' : 'Ready'));
+            document.getElementById('t2Detection').textContent = t2Both ? 'BOTH!' : 
+                (lasers[2].isDetectingP0 ? 'P₀' : (lasers[2].isDetectingP1 ? 'P₁' : 'Ready'));
+            
+            document.getElementById('currentSeparation').textContent = 
+                Math.abs(p1.x - p0.x).toFixed(0) + ' units';
+            
+            if (system.isRunning) {
+                animationId = requestAnimationFrame(animate);
+            } else if (system.elapsed > T2) {
+                setTimeout(() => {
+                    system.reset();
+                    drawStaticElements();
+                    system.draw(ctx);
+                    document.getElementById('t0Detection').textContent = 'Ready';
+                    document.getElementById('t1Detection').textContent = 'Ready';
+                    document.getElementById('t2Detection').textContent = 'Ready';
+                }, 1000);
+            }
+        }
+        
+        function startAnimation() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            
+            startTime = null;
+            lastTime = 0;
+            
+            G = parseFloat(document.getElementById('acceleration').value);
+            T1 = parseFloat(document.getElementById('t1Time').value);
+            T2 = parseFloat(document.getElementById('t2Time').value);
+            D = parseFloat(document.getElementById('separation').value);
+            
+            p0.x0 = X0_P0;
+            p1.x0 = X0_P0 + D;
+            
+            positions = calculateLaserPositions(X0_P0, D, G, T1, T2);
+            lasers[0].updatePosition(positions.midX0, D);
+            lasers[1].updatePosition(positions.midX1, D);
+            lasers[2].updatePosition(positions.midX2, D);
+            
+            system.start(G, T1, T2);
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        // Event listeners
+        document.getElementById('separation').addEventListener('input', (e) => {
+            document.getElementById('separationValue').textContent = e.target.value + ' units';
+            D = parseFloat(e.target.value);
+            p1.x0 = X0_P0 + D;
+            p1.x = X0_P0 + D;
+            
+            positions = calculateLaserPositions(X0_P0, D, G, T1, T2);
+            lasers[0].updatePosition(positions.midX0, D);
+            lasers[1].updatePosition(positions.midX1, D);
+            lasers[2].updatePosition(positions.midX2, D);
+            
+            drawStaticElements();
+            system.draw(ctx);
+        });
+        
+        document.getElementById('acceleration').addEventListener('input', (e) => {
+            document.getElementById('accelerationValue').textContent = parseFloat(e.target.value).toFixed(1) + ' m/s²';
+            G = parseFloat(e.target.value);
+        });
+        
+        document.getElementById('t1Time').addEventListener('input', (e) => {
+            document.getElementById('t1Value').textContent = parseFloat(e.target.value).toFixed(1) + ' s';
+            T1 = parseFloat(e.target.value);
+            const t2Slider = document.getElementById('t2Time');
+            if (parseFloat(t2Slider.value) <= T1) {
+                t2Slider.value = T1 + 1;
+                document.getElementById('t2Value').textContent = (T1 + 1).toFixed(1) + ' s';
+                T2 = T1 + 1;
+            }
+        });
+        
+        document.getElementById('t2Time').addEventListener('input', (e) => {
+            const newT2 = parseFloat(e.target.value);
+            if (newT2 > T1) {
+                document.getElementById('t2Value').textContent = newT2.toFixed(1) + ' s';
+                T2 = newT2;
+            } else {
+                e.target.value = T1 + 1;
+                document.getElementById('t2Value').textContent = (T1 + 1).toFixed(1) + ' s';
+                T2 = T1 + 1;
+            }
+        });
+        
+        // Initial draw
+        drawStaticElements();
+        system.draw(ctx);
+    </script>
+</body>
+</html>
