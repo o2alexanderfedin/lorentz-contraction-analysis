@@ -175,27 +175,27 @@
         
         <div class="controls">
             <div class="control-group">
-                <label for="separation">Separation Distance D (units)</label>
+                <label for="separation">Separation Distance D (light-seconds)</label>
                 <input type="range" id="separation" min="100" max="400" value="200" step="10">
-                <div class="value" id="separationValue">200 units</div>
+                <div class="value" id="separationValue">0.20 ls</div>
             </div>
             
             <div class="control-group">
-                <label for="acceleration">Acceleration G (m/s²)</label>
-                <input type="range" id="acceleration" min="1" max="10" value="5" step="0.5">
-                <div class="value" id="accelerationValue">5.0 m/s²</div>
+                <label for="acceleration">Acceleration G (c/s)</label>
+                <input type="range" id="acceleration" min="0.01" max="0.1" value="0.05" step="0.005">
+                <div class="value" id="accelerationValue">0.050 c/s</div>
             </div>
             
             <div class="control-group">
                 <label for="t1Time">T₁ Time (seconds)</label>
-                <input type="range" id="t1Time" min="1" max="5" value="2" step="0.1">
-                <div class="value" id="t1Value">2.0 s</div>
+                <input type="range" id="t1Time" min="1" max="10" value="5" step="0.5">
+                <div class="value" id="t1Value">5.0 s</div>
             </div>
             
             <div class="control-group">
                 <label for="t2Time">T₂ Time (seconds)</label>
-                <input type="range" id="t2Time" min="3" max="10" value="5" step="0.1">
-                <div class="value" id="t2Value">5.0 s</div>
+                <input type="range" id="t2Time" min="6" max="20" value="10" step="0.5">
+                <div class="value" id="t2Value">10.0 s</div>
             </div>
             
             <div class="control-group">
@@ -217,16 +217,16 @@
                 <div id="t2Detection" class="measurement-value">Ready</div>
             </div>
             <div class="measurement-card">
-                <h4>Separation D</h4>
-                <div id="currentSeparation" class="measurement-value">200 units</div>
+                <h4>Velocity (v/c)</h4>
+                <div id="velocityDisplay" class="measurement-value">0.000</div>
             </div>
         </div>
         
         <div class="info-panel">
             <h3>🔬 Beam Splitter Detection Principle</h3>
             <p>
-                <strong>Single Laser per Time Point:</strong> Instead of separate lasers for each particle, we use a single laser
-                with a beam splitter at each time point (T₀, T₁, T₂).
+                <strong>Relativistic Units:</strong> Using natural units where c = 1. Acceleration in c/s,
+                distances in light-seconds. With G = 0.05 c/s and T₁ = 5s, particles reach v = 0.25c.
             </p>
             <p>
                 <strong>Simultaneous Detection:</strong> The beam splitter divides each laser beam to detect both P₀ and P₁
@@ -420,7 +420,7 @@
                 this.p0 = p0;
                 this.p1 = p1;
                 this.lasers = lasers;
-                this.scale = 20;
+                this.scale = 400; // Match scale for relativistic units
                 this.elapsed = 0;
                 this.phase = 'idle';
                 this.G = 5;
@@ -549,12 +549,12 @@
         let startTime = null;
         let lastTime = 0;
         
-        // Physics parameters
-        let G = 5;
-        let T1 = 2;
-        let T2 = 5;
-        let D = 200;
-        let X0_P0 = 300;
+        // Physics parameters (relativistic units, c = 1)
+        let G = 0.05;  // acceleration in c/s
+        let T1 = 5;     // seconds
+        let T2 = 10;    // seconds  
+        let D = 200;    // pixels (represents 0.2 light-seconds)
+        let X0_P0 = 300; // pixels
         
         // Create particles
         const p0 = new Particle('P₀', X0_P0, '#4299e1');
@@ -562,7 +562,7 @@
         
         // Calculate laser positions
         function calculateLaserPositions(x0, D, G, T1, T2) {
-            const scale = 20;
+            const scale = 400; // Increased scale for relativistic units (c=1)
             const midX0 = x0 + D / 2;
             const displacement1 = 0.5 * G * T1 * T1 * scale;
             const midX1 = midX0 + displacement1;
@@ -654,8 +654,16 @@
             document.getElementById('t2Detection').textContent = t2Both ? 'BOTH!' : 
                 (lasers[2].isDetectingP0 ? 'P₀' : (lasers[2].isDetectingP1 ? 'P₁' : 'Ready'));
             
-            document.getElementById('currentSeparation').textContent = 
-                Math.abs(p1.x - p0.x).toFixed(0) + ' units';
+            // Update velocity display (v/c)
+            const currentVelocity = system.p0.velocity || 0;
+            document.getElementById('velocityDisplay').textContent = currentVelocity.toFixed(3);
+            if (currentVelocity > 0.5) {
+                document.getElementById('velocityDisplay').style.color = '#f56565';
+            } else if (currentVelocity > 0.1) {
+                document.getElementById('velocityDisplay').style.color = '#f6ad55';
+            } else {
+                document.getElementById('velocityDisplay').style.color = '#48bb78';
+            }
             
             if (system.isRunning) {
                 animationId = requestAnimationFrame(animate);
@@ -698,8 +706,9 @@
         
         // Event listeners
         document.getElementById('separation').addEventListener('input', (e) => {
-            document.getElementById('separationValue').textContent = e.target.value + ' units';
-            D = parseFloat(e.target.value);
+            const ls = parseFloat(e.target.value) / 1000; // Convert pixels to light-seconds display
+            document.getElementById('separationValue').textContent = ls.toFixed(2) + ' ls';
+            D = parseFloat(e.target.value); // Keep D in pixels for rendering
             p1.x0 = X0_P0 + D;
             p1.x = X0_P0 + D;
             
@@ -713,7 +722,7 @@
         });
         
         document.getElementById('acceleration').addEventListener('input', (e) => {
-            document.getElementById('accelerationValue').textContent = parseFloat(e.target.value).toFixed(1) + ' m/s²';
+            document.getElementById('accelerationValue').textContent = parseFloat(e.target.value).toFixed(3) + ' c/s';
             G = parseFloat(e.target.value);
         });
         
