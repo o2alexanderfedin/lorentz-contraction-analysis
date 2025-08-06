@@ -471,7 +471,7 @@
                 this.p0 = p0;
                 this.p1 = p1;
                 this.lasers = lasers;
-                this.scale = 10; // Reduced from 20 to zoom out
+                this.scale = 20;
                 this.elapsed = 0;
                 this.phase = 'idle';
                 this.G = 5;
@@ -605,7 +605,7 @@
         let T1 = 2;
         let T2 = 5;
         let D = 200;
-        let X0_P0 = 400; // Moved right to center better
+        let X0_P0 = 300;
         
         // Create particles
         const p0 = new Particle('P₀', X0_P0, '#4299e1');
@@ -613,7 +613,7 @@
         
         // Calculate laser positions
         function calculateLaserPositions(x0, D, G, T1, T2) {
-            const scale = 10; // Reduced from 20 to match system scale
+            const scale = 20;
             const midX0 = x0 + D / 2;
             const displacement1 = 0.5 * G * T1 * T1 * scale;
             const midX1 = midX0 + displacement1;
