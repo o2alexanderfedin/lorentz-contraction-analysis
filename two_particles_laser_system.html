@@ -195,7 +195,7 @@
         <p class="subtitle">P₀ and P₁ Moving with Identical Acceleration, Separated by Distance D</p>
         
         <div class="canvas-container">
-            <canvas id="motionCanvas" width="1200" height="600"></canvas>
+            <canvas id="motionCanvas" width="1300" height="600"></canvas>
         </div>
         
         <div class="controls">
@@ -450,7 +450,7 @@
                     this.phase = 'detected';
                     const V1 = this.G * this.T1;
                     const X1 = this.particle.x0 + 0.5 * this.G * this.T1 * this.T1 * this.scale;
-                    x = Math.min(X1 + V1 * (this.T2 - this.T1) * this.scale, 1100);
+                    x = X1 + V1 * (this.T2 - this.T1) * this.scale;
                     velocity = V1;
                     
                     // Stop after detection
@@ -515,7 +515,7 @@
             const scale = 20;
             const X1 = x0 + 0.5 * G * T1 * T1 * scale;
             const V1 = G * T1;
-            const X2 = Math.min(X1 + V1 * (T2 - T1) * scale, 1100);
+            const X2 = X1 + V1 * (T2 - T1) * scale;
             return { X0: x0, X1, X2 };
         }
         
@@ -549,13 +549,13 @@
             // P0 axis
             ctx.beginPath();
             ctx.moveTo(50, 350);
-            ctx.lineTo(1150, 350);
+            ctx.lineTo(1250, 350);
             ctx.stroke();
             
             // P1 axis
             ctx.beginPath();
             ctx.moveTo(50, 450);
-            ctx.lineTo(1150, 450);
+            ctx.lineTo(1250, 450);
             ctx.stroke();
             
             // Draw position markers
